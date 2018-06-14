@@ -143,8 +143,7 @@ def RHS(u,x,t,dt,operators = None ):
     return rhs
 
 
-
-def integration(u,x,t,dt,operators=None,method ='RK4',bc_type = 'periodic',bcs = None,n_g = param_n_ghost):
+def integration(u,x,t,dt,operators=None,method ='RK4',bc_type = 'periodic',bcs = None,n_g = param_n_ghost,return_rhs = False):
     '''
     Integrate a problem.
     u is the quantity to solve
@@ -160,6 +159,7 @@ def integration(u,x,t,dt,operators=None,method ='RK4',bc_type = 'periodic',bcs =
     bc_type is the type of BC: periodic, neumann (flux) or dirichlet (fixed BC)
     bcs is the values (flux in Neumann's case, fixed values in dirichlet's case)
     n_g is the size of the sponge zone
+    return_rhs: True or False. 
     '''
     #
     if operators is None: 
@@ -182,5 +182,8 @@ def integration(u,x,t,dt,operators=None,method ='RK4',bc_type = 'periodic',bcs =
         rhs = (k1 + 2.*k2 + 2.*k3 + k4)/6.
         u,x = deghost(u,x,n_g = n_g)
     #
-    return u,rhs
+    if return_rhs is True:
+        return u,rhs
+    else:
+        return u
 

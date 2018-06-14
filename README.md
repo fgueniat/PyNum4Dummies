@@ -16,7 +16,7 @@ Other functions to come to compute the adjoint.
 The script illustrates the use of the library.
 
 Todo:
-* real script for burger.
+* advection: instabilities in LUD when too stiff ?
 * adjoint.
 
 
