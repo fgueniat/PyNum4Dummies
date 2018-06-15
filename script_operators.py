@@ -31,8 +31,8 @@ time = t0 + dt*np.arange(n_it)
 # Initial Conditions
 u_background = 0.
 # Gaussian
-s_dev, mu = .05, 0.
-u0  = np.exp(- (x-mu)**2 / (2. * s_dev) ) / np.sqrt(2. * np.pi * s_dev)
+s_dev2, mu = .05, 0.
+u0  = np.exp(- (x-mu)**2 / (2. * s_dev2) ) / np.sqrt(2. * np.pi * s_dev2)
 u0 += u_background
 # wave
 #u0 = np.sin(2.*np.pi*x)
