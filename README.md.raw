@@ -47,7 +47,6 @@ The various scripts illustrate the use of the library:
 
 
 
-
 # Computing the gradient of the cost functional
 
 We want to look at the problem depending on some parameters:
@@ -106,7 +105,7 @@ $$
 		\int_0^T   {   {\lambda}}^T\partial_{\dot{u}} F  d_{   {q}} \dot{u} {\textrm d}t = 
 		  \left[   {\lambda}^T\partial_{\dot{u}} F  {\textrm d}_{   {q}} u \right]_0^T 
 		   - \int_0^T \left\{\dot{   {\lambda}}^T\partial_{\dot{u}} F  \right. 
-		   \left. +    {\lambda}^T \partial_t \partial_{\dot{u}}F  \right\}d_{   {q}} u {\textrm d}t.
+		   \left. +    {\lambda}^T \partial_t \partial_{\dot{u}}F  \right\} \partial_q u {\textrm d}t.
 $$
 
 The term associated with $\partial_{ \dot{u} }$ can now be replaced.

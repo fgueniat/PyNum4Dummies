@@ -47,7 +47,6 @@ The various scripts illustrate the use of the library:
 
 
 
-
 # Computing the gradient of the cost functional
 
 We want to look at the problem depending on some parameters:
@@ -81,7 +80,7 @@ Upon optimality, one has <img src="https://rawgit.com/fgueniat/PyNum4Dummies/mas
 The term in <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/c2f43910af366cae2d41e81ddd7e93a5.svg?invert_in_darkmode" align=middle width=16.437795pt height=22.74591pt/> cannot be easily estimated. An integration by parts gives:
 
 
-<p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/79e3554dc3d7a585a5455122efd64082.svg?invert_in_darkmode" align=middle width=493.47705pt height=41.121795pt/></p>
+<p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/76ed7bc4217709bcf3ca756f860aa836.svg?invert_in_darkmode" align=middle width=493.647pt height=41.121795pt/></p>
 
 The term associated with <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/d334a39817444a817c8f52832258f502.svg?invert_in_darkmode" align=middle width=16.437795pt height=22.74591pt/> can now be replaced.
 
