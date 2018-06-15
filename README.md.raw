@@ -1,0 +1,141 @@
+# PyNum4Dummies
+
+This project consists in a library solver_tools and a bunch of python scripts.
+
+The library aims at solving "easy" 1d partial differential equations (pdes), for education and reasearach.
+Exemples of these pdes are:
+* The heat equation
+* Burger equation
+* The advection equation
+
+The librairie contains:
+* a function to integrate the equation
+* discretization of:
+	** space derivative:
+    	- LUD
+     	- upwind
+	** second space derivative
+    	- central_scheme
+* cfl (compute and print the cfl number)
+
+Other functions will be implemented, to derive reduced order models (ROM) of the equation, as well as computing the adjoint variables (see later).
+
+The various scripts illustrate the use of the library.
+
+Todo:
+* advection: instabilities in LUD when too stiff ? Flux limiter ?
+* adjoint.
+
+
+
+
+
+
+Computing the gradient of the cost functional
+
+We want to look at the problem depending on some parameters:
+
+$$
+J(q) = \int_0^T 
+		j(u,q,t)	
+	{\textrm d}t 
+$$
+s.t. the physics:
+$$
+F(u,\dot{u},q,t) = 0
+$$
+and considering that the initial conditions are (potentially) related to the parameters q with:
+$$
+g(u(0),q) = 0
+$$
+
+We want to find the argmin of J.
+
+Identifying the minimum of the $J$ relies on the gradient of the functional with respect to the parameters:
+$D_q J = \frac{D\,J}{Dq}$. 
+
+Finite differentiation is out of reach if the size of q is large.
+
+For that, one can introduce the Lagrangian $ L$, associated with the two Lagrange parameters $\boldsymbol{\lambda}$ and $\boldsymbol{\mu}$:
+
+$$
+
+   L 
+			\bigg( u,\dot{u},\boldsymbol{q},\boldsymbol{\lambda},\boldsymbol{\mu} \bigg)
+  = 
+    \int_0^T
+  	\bigg[
+		j    + \boldsymbol{\lambda}^T F  
+  	\bigg] {\textrm d}t 
+    + \boldsymbol{\mu}^T \left(  g     \right),
+
+$$
+where $^T$ is the transpose operator. 
+Naturally, both $u$ and $\dot{u}$ are considered as variables.
+
+As $F$ and $g$ are null by construction, $\boldsymbol{\lambda}$ and $\boldsymbol{\mu}$ can be designed specifically to alleviate the computations.
+
+The gradient $D_q L = \frac{D L}{Dq}$ of $ L$ is
+$$
+
+		D_q L= 
+		   \int_0^T  \bigg[\partial_{u}j d_{\boldsymbol{q}} u  +\partial_{\boldsymbol{q}} j 
+		   + \boldsymbol{\lambda}^T \partial_{u}  F {\textrm d}_{\boldsymbol{q}} u 
+		   + \boldsymbol{\lambda}^T\partial_{\dot{u}} F d_{\boldsymbol{q}} \dot{u}  
+		   + \boldsymbol{\lambda}^T\partial_q F \bigg] {\textrm d}t \\
+		    + \boldsymbol{\mu}^T \partial_{u(0)} g {\textrm d}_q{u(0)}  
+		   + \boldsymbol{\mu}^T \partial_{\boldsymbol{q}} g.
+
+$$
+Upon optimality, one has $D_q L = D_{\boldsymbol{q}} J$.
+
+The term in $d_{\dot{u}}$ cannot be easily estimated. An integration by parts gives:
+
+
+$$
+		\int_0^T\boldsymbol{\boldsymbol{\lambda}}^T\partial_{\dot{u}} F  d_{\boldsymbol{q}} \dot{u} {\textrm d}t = 
+		  \left[\boldsymbol{\lambda}^T\partial_{\dot{u}} F  {\textrm d}_{\boldsymbol{q}} u \right]_0^T 
+		   - \int_0^T \left\{\dot{\boldsymbol{\lambda}}^T\partial_{\dot{u}} F  \right. 
+		   \left. + \boldsymbol{\lambda}^T \partial_t \partial_{\dot{u}}F  \right\}d_{\boldsymbol{q}} u {\textrm d}t.
+$$
+The term associated with ${\textrm d}_{\dot{u}}$ can now be replaced.
+
+Ordering terms leads to:
+
+$$
+		&D_q L\left   = 
+		   \int_0^T  \Bigg[  \bigg(\partial_{u}j\mypar{u,\boldsymbol{q},t}  +  \boldsymbol{\lambda}^T \partial_{u}  F    
+		   - \big\{\dot{\boldsymbol{\lambda}}^T\partial_{\dot{u}} F    
+		   +  \boldsymbol{\lambda}^T \partial_t\partial_{\dot{u}}F   \big\}\bigg) {\textrm d}_{\boldsymbol{q}} u   
+		  + \partial_{\boldsymbol{q}} j       + \boldsymbol{\lambda}^T\partial_qF   \Bigg] {\textrm d}t  
+		  + \bigg(\boldsymbol{\mu}^T \partial_{u} g  
+		  -  \left. \boldsymbol{\lambda}^T\partial_{\dot{u}} F   \bigg)
+		\right|_0 dq_{u(0)}  
+	   +  \boldsymbol{\mu}^T \partial_{\boldsymbol{q}} g    
+	   +  \left.\bigg(\boldsymbol{\lambda}^T\partial_{\dot{u}} F  \bigg)\right|_T {\textrm d}_{\boldsymbol{q}} u(T)
+
+$$
+
+Proper choices for $\boldsymbol{\lambda}$ and $\boldsymbol{\mu}$ allow to simplify the expression of $D_q L$.
+The choice of $\boldsymbol{\lambda}\mypar{T} = \boldsymbol{0}$ nullifies the term $\left.\bigg(\boldsymbol{\lambda}^T\partial_{\dot{u}} F  \bigg)\right|_T {\textrm d}_{\boldsymbol{q}} u(T)$.
+$\boldsymbol{\lambda}$ can then be chosen as the solution of the so-called adjoint equation,~\cite{Ledimet1986,Talagrand1997}:
+$$
+
+		 \bigg(\partial_{u}j    + \boldsymbol{\lambda}^T \partial_{u}  F   
+		   - \big\{\dot{\boldsymbol{\lambda}}^T\partial_{\dot{u}} F   
+		   + \boldsymbol{\lambda}^T \partial_t\partial_{\dot{u}}F  \big\}\bigg) = \boldsymbol{0},
+
+$$
+integrated backwards in time. 
+Finally, the Lagrange parameter $\boldsymbol{\mu}$ is set so that it nullifies the component associated with $dq_{u(0)}$:
+$$ \left.\mya{\boldsymbol{\mu}^T \partial_{u} g   - \boldsymbol{\lambda}^T\partial_{\dot{u}} F   }\right|_0 = \boldsymbol{0}.$$
+Then, computing $D_q L$, hence $ D_qJ$, is achieved by the integration of:
+$$
+
+		 D_qJ\mypar{u,\boldsymbol{q}} = 
+		  \int_0^T  \bigg[  \partial_{\boldsymbol{q}} j     + \boldsymbol{\lambda}^T\partial_qF   \bigg] {\textrm d}t 
+		&   +   \boldsymbol{\mu}^T \partial_{\boldsymbol{q}} g   .
+
+$$
+
+
