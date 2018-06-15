@@ -7,9 +7,9 @@ The library aims at solving "easy" 1d partial differential equations (pdes), for
 
 
 ### Exemples of pdes:
-* The heat equation $$ \frac{\partial u}{\partial t} = \alpha \frac{\partial^2 u}{\partial x^2} $$
-* Burger equation $$ \frac{\partial u} {\partial t} = -u \frac{\partial u}{\partial x} $$
-* The advection equation $$ \frac{\partial u} {\partial t} = -c \frac{\partial u}{\partial x} $$
+* The heat equation $ \frac{\partial u}{\partial t} = \alpha \frac{\partial^2 u}{\partial x^2} $
+* Burger equation $ \frac{\partial u} {\partial t} = -u \frac{\partial u}{\partial x} $
+* The advection equation $ \frac{\partial u} {\partial t} = -c \frac{\partial u}{\partial x} $
 
 
 ## Files
@@ -108,7 +108,7 @@ $$
 		   - \int_0^T \left\{\dot{   {\lambda}}^T\partial_{\dot{u}} F  \right. 
 		   \left. +    {\lambda}^T \partial_t \partial_{\dot{u}}F  \right\}d_{   {q}} u {\textrm d}t.
 $$
-The term associated with ${\textrm d}_{\dot{u}}$ can now be replaced.
+The term associated with ${\textrm d}_{ \dot{u} }$ can now be replaced.
 
 Ordering terms leads to:
 

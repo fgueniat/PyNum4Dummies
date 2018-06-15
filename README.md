@@ -7,9 +7,9 @@ The library aims at solving "easy" 1d partial differential equations (pdes), for
 
 
 ### Exemples of pdes:
-* The heat equation <p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/99bf311583d305ed37ca20321fd06a39.svg?invert_in_darkmode" align=middle width=81.82812pt height=35.749725pt/></p>
-* Burger equation <p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/849b24bd15261e84b00560da71973951.svg?invert_in_darkmode" align=middle width=86.029185pt height=33.769395pt/></p>
-* The advection equation <p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/487301be0e38f751867d3d2c524e520b.svg?invert_in_darkmode" align=middle width=83.741295pt height=33.769395pt/></p>
+* The heat equation <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/458569e3907f54a425e4fecadb138e1f.svg?invert_in_darkmode" align=middle width=73.767705pt height=33.42009pt/>
+* Burger equation <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/ec7768a23e0ca2a447be1cc33a099882.svg?invert_in_darkmode" align=middle width=78.92775pt height=28.86675pt/>
+* The advection equation <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/19a5775f98b29fc2720f13ec6f7851aa.svg?invert_in_darkmode" align=middle width=76.63986pt height=28.86675pt/>
 
 
 ## Files
@@ -82,7 +82,7 @@ The term in <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/4492
 
 
 <p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/79e3554dc3d7a585a5455122efd64082.svg?invert_in_darkmode" align=middle width=493.47705pt height=41.121795pt/></p>
-The term associated with <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/187b16ff190bebafb8d6f6e7d28ef9e4.svg?invert_in_darkmode" align=middle width=16.87554pt height=22.74591pt/> can now be replaced.
+The term associated with <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/b7faac62964bb19724bc847f247852c1.svg?invert_in_darkmode" align=middle width=16.87554pt height=22.74591pt/> can now be replaced.
 
 Ordering terms leads to:
 
