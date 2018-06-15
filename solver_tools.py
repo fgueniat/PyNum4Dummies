@@ -101,10 +101,10 @@ def ghost(u,x,bc_type='periodic',bcs = None ,n_g=param_n_ghost):
         u = np.r_[
                     bcs[0]*np.ones(n_g), 
                     u ,
-                    bcs[1]*ones(n_g)
+                    bcs[1]*np.ones(n_g)
                     ]
     #    
-    if bc_type == 'Neumann':
+    if bc_type == 'neumann':
         dxl = x[0] - x[1]
         dxr = x[-1] - x[-2]
         u = np.r_[

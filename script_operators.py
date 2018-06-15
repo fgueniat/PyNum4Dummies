@@ -1,5 +1,5 @@
 import numpy as np
-import plot_tools as pt
+#import plot_tools as pt
 import solver_tools as st
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
@@ -12,7 +12,7 @@ import matplotlib.animation as animation
 ##################################################
 # physics
 nu = 0.01
-c_0 = 10.
+c_0 = 2.
 
 # integration
 method = 'RK4'
@@ -23,13 +23,13 @@ xmin,xmax = -1.,1.
 x = np.linspace(xmin,xmax,n_x)
 
 # time
-t0,dt = 0., 0.001
-tmax = 20
+t0,dt = 0., 0.0005
+tmax = 1.5
 n_it = int(tmax/dt)
 time = t0 + dt*np.arange(n_it)
 
 # Initial Conditions
-u_background = -1.
+u_background = 0.
 # Gaussian
 s_dev, mu = .05, 0.
 u0  = np.exp(- (x-mu)**2 / (2. * s_dev) ) / np.sqrt(2. * np.pi * s_dev)
@@ -39,7 +39,7 @@ u0 += u_background
 
 # Boundary conditions
 bc_type = 'periodic'
-bcs = None
+bcs = [0.,0.]
 
 # plot parameters:
 ind_plot_start,ind_plot_end,n_plot_skip = 0,n_it,int(n_it/100)
@@ -184,56 +184,6 @@ plt.show()
 
 
 
-
-
-##################################################
-##################################################
-# Verifications
-##################################################
-##################################################
-
-
-def test_advection_i(i,c=c_0,verbose=False):
-    '''
-    function that test the accuracy for the advection function at time i:
-    du/dt = -c0 du/dx
-    it checks, for a time i, the ratio r(x) = du/dt / du/dx, supposedly equal to -c0.
-    '''
-    dudt = (U[i+1] - U[i-1]) / (2 * n_save * dt)
-    dudt = dudt[1:-1]
-    dudx = (U[i][2:] - U[i][:-2])/((x[2:] - x[:-2]))
-    if verbose is True:
-        print 'error in % w.r.t. c',100*np.mean(dudt/dudx + c)/np.abs(c),'% +-',100*np.std(dudt/dudx + c)/np.abs(c),'%'
-    if 0. in dudx:
-        dudx += 0.000001*np.random.random(dudx.shape)
-    return np.nanmean(dudt/dudx + c)/np.abs(c)
-    #return dudt,dudx
-
-
-def test_diffusion_i(i,nu = nu,verbose=False):
-    '''
-    function that test the accuracy for the advection function at time i:
-    du/dt = nu d^2u/dx^2
-    it checks, for a time i, the ratio r(x) = du/dt / d^2u/dx^2, supposedly equal to nu.
-    '''
-    dudt = (U[i+1] - U[i-1]) / (2 * n_save * dt)
-    dudt = dudt[1:-1]
-    d2udx2 = ( U[i][2:] - 2.*U[i][1:-1] + U[i][:-2] )/( 2.* (0.5*(x[2:] - x[:-2]))**2.)
-    if verbose is True:
-        print 'error in % w.r.t. dudt',100*np.mean(dudt/d2udx2 - nu)/np.abs(nu),'% +-',100*np.std(dudt/d2udx2 - nu)/np.abs(nu),'%'
-    if 0. in dudx:
-        d2udx2 += 0.000001*np.random.random(d2udx2.shape)
-    return np.nanmean(dudt/d2udx2 - nu)/np.abs(nu)
-    #return dudt,d2udx2
-
-if is_test is True:
-    names = [op.__name__ for op in operators]
-    # 
-    if names == [operator_advection.__name__]:
-        errors = np.zeros(len(U)-2)
-        for i in xrange(1,len(U)-1):
-            errors[i-1] = test_advection_i(i)
-        print 'errors advection',np.nanmean(errors),np.nanstd(errors)
 
 
 
