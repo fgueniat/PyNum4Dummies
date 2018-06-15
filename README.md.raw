@@ -64,7 +64,7 @@ $$
 For instance, considering $q\equiv \{q_c,q_u}$, and if the equation is the Burgers' equation, we have
 
 $$
-F(u,\dot{u},q,t) = \frac{\partial u} {\partial t} + q_c u \frac{\partial u}{\partial x}  
+F(u,\dot{u},q,t) := \frac{\partial u} {\partial t} + q_c u \frac{\partial u}{\partial x}  =0
 $$
 
 
@@ -77,7 +77,7 @@ $$
 For instance, if the initial conditions are actually the parameter $q_u$:
 
 $$ 
-	g(u(0),q) := u(0) - q_u.
+	g(u(0),q) := u(0) - q_u =0.
 $$
 
 

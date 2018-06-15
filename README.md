@@ -57,7 +57,7 @@ s.t. the physics:
 
 For instance, considering <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/2c3597bc2c5dab9ac8fa5584df765e81.svg?invert_in_darkmode" align=middle width=74.3094pt height=24.56553pt/>, and if the equation is the Burgers' equation, we have
 
-<p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/20a29cce006e3e6683509994b60c0ded.svg?invert_in_darkmode" align=middle width=189.3342pt height=33.769395pt/></p>
+<p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/efede7cdc7c66e46783506cfef0a055a.svg?invert_in_darkmode" align=middle width=225.91305pt height=33.769395pt/></p>
 
 
 We are also considering that the initial conditions are (potentially) related to the parameters q with:
@@ -66,7 +66,7 @@ We are also considering that the initial conditions are (potentially) related to
 
 For instance, if the initial conditions are actually the parameter <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/db690fdb4ebf32ef3722ac5b7d64d136.svg?invert_in_darkmode" align=middle width=15.054105pt height=14.10255pt/>:
 
-<p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/63c8ec8cf1eb756f5d64b30c2406c110.svg?invert_in_darkmode" align=middle width=163.84731pt height=16.376943pt/></p>
+<p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/2b76a93e1a4ea33f591cbc61e9da7cfd.svg?invert_in_darkmode" align=middle width=193.90635pt height=16.376943pt/></p>
 
 
 We want to find the argmin of J.
