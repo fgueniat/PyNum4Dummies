@@ -1,18 +1,29 @@
 # PyNum4Dummies
 
+## Aims
 This project consists in a library solver_tools and a bunch of python scripts.
 
-The library aims at solving "easy" 1d partial differential equations (pdes), for education and reasearach.
-Exemples of these pdes are:
+The library aims at solving "easy" 1d partial differential equations (pdes), for education and research.
+
+
+### Exemples of pdes:
 * The heat equation <p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/99bf311583d305ed37ca20321fd06a39.svg?invert_in_darkmode" align=middle width=81.82812pt height=35.749725pt/></p>
 * Burger equation <p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/849b24bd15261e84b00560da71973951.svg?invert_in_darkmode" align=middle width=86.029185pt height=33.769395pt/></p>
 * The advection equation <p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/487301be0e38f751867d3d2c524e520b.svg?invert_in_darkmode" align=middle width=83.741295pt height=33.769395pt/></p>
 
-The librairie contains:
+
+## Files
+The project consists in a library and a collection of scripts that illustrates it.
+
+
+### The librairie 
+solver_tools.py
+
+It contains:
 * a function to integrate the equation <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/940c85b13e2fb5a4a59056b59c583cf0.svg?invert_in_darkmode" align=middle width=129.80715pt height=28.86675pt/>
 * discretization of:
-	** space derivative: <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/7da93b46f7712a0110dbfb9d2035e68c.svg?invert_in_darkmode" align=middle width=125.696175pt height=28.86675pt/>
-    	- LUD
+	* space derivative: <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/7da93b46f7712a0110dbfb9d2035e68c.svg?invert_in_darkmode" align=middle width=125.696175pt height=28.86675pt/>
+    	* LUD
      	- upwind
 	** second space derivative <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/cb5f9f5c88b90ad2366ca70548b60f8d.svg?invert_in_darkmode" align=middle width=107.509545pt height=33.42009pt/>
     	- central_scheme
@@ -20,9 +31,17 @@ The librairie contains:
 
 Other functions will be implemented, to derive reduced order models (ROM) of the equation, as well as computing the adjoint variables (see later).
 
-The various scripts illustrate the use of the library.
+### The scripts
+The various scripts illustrate the use of the library:
+* script_advection.py - advection equation
+* script_test_accuracy.py - test the accuracy of the solver
+* script_unsteady_bc.py - illlustrates unsteady boundary conditions
+* script_burgers_inviscid.py - inviscid burger equation
+* script_viscous_burgers.py - viscous burger equation
+* script_operators.py - general equation
 
-Todo:
+
+## Todo:
 * advection: instabilities in LUD when too stiff ? Flux limiter ?
 * adjoint.
 
@@ -30,8 +49,7 @@ Todo:
 
 
 
-
-Computing the gradient of the cost functional
+# Computing the gradient of the cost functional
 
 We want to look at the problem depending on some parameters:
 
