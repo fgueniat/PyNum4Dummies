@@ -4,17 +4,17 @@ This project consists in a library solver_tools and a bunch of python scripts.
 
 The library aims at solving "easy" 1d partial differential equations (pdes), for education and reasearach.
 Exemples of these pdes are:
-* The heat equation
-* Burger equation
-* The advection equation
+* The heat equation $$ \frac{\partial u}{\partial t} = \alpha \frac{\partial^2 u}{\partial x^2} $$
+* Burger equation $$ \frac{partial u} {\partial t} = -u \frac{\partial u}{\partial x} $$
+* The advection equation $$ \frac{partial u} {\partial t} = -c \frac{\partial u}{\partial x} $$
 
 The librairie contains:
-* a function to integrate the equation
+* a function to integrate the equation $ \frac{\partial u}{\partial t} = RHS(u,x,t) $
 * discretization of:
-	** space derivative:
+	** space derivative: $f(a,u,x,t) = a \frac{\partial u}{\partial x}$
     	- LUD
      	- upwind
-	** second space derivative
+	** second space derivative $f(u,x,t) = \frac{\partial^2 u}{\partial x^2}$
     	- central_scheme
 * cfl (compute and print the cfl number)
 
@@ -56,47 +56,40 @@ $D_q J = \frac{D\,J}{Dq}$.
 
 Finite differentiation is out of reach if the size of q is large.
 
-For that, one can introduce the Lagrangian $ L$, associated with the two Lagrange parameters $\boldsymbol{\lambda}$ and $\boldsymbol{\mu}$:
+For that, one can introduce the Lagrangian $ L$, associated with the two Lagrange parameters $   {\lambda}$ and $   {\mu}$:
 
 $$
-
-   L 
-			\bigg( u,\dot{u},\boldsymbol{q},\boldsymbol{\lambda},\boldsymbol{\mu} \bigg)
-  = 
-    \int_0^T
-  	\bigg[
-		j    + \boldsymbol{\lambda}^T F  
-  	\bigg] {\textrm d}t 
-    + \boldsymbol{\mu}^T \left(  g     \right),
-
+   L\bigg(u,\dot{u},q,\lambda,\mu\bigg) = 
+    \int_0^T \bigg[ j  +  {\lambda}^T F  \bigg] {\textrm d}t + {\mu}^T g,
 $$
 where $^T$ is the transpose operator. 
 Naturally, both $u$ and $\dot{u}$ are considered as variables.
 
-As $F$ and $g$ are null by construction, $\boldsymbol{\lambda}$ and $\boldsymbol{\mu}$ can be designed specifically to alleviate the computations.
+As $F$ and $g$ are null by construction, $   {\lambda}$ and $   {\mu}$ can be designed specifically to alleviate the computations.
 
 The gradient $D_q L = \frac{D L}{Dq}$ of $ L$ is
 $$
-
-		D_q L= 
-		   \int_0^T  \bigg[\partial_{u}j d_{\boldsymbol{q}} u  +\partial_{\boldsymbol{q}} j 
-		   + \boldsymbol{\lambda}^T \partial_{u}  F {\textrm d}_{\boldsymbol{q}} u 
-		   + \boldsymbol{\lambda}^T\partial_{\dot{u}} F d_{\boldsymbol{q}} \dot{u}  
-		   + \boldsymbol{\lambda}^T\partial_q F \bigg] {\textrm d}t \\
-		    + \boldsymbol{\mu}^T \partial_{u(0)} g {\textrm d}_q{u(0)}  
-		   + \boldsymbol{\mu}^T \partial_{\boldsymbol{q}} g.
+		D_q L = 
+			\int_0^T  \bigg[
+				\partial_u j \partial_q u  +\partial_q j 
+				+ \lambda^T \partial_u F \partial_q u 
+			    + \lambda}^T\partial_{ \dot{u} } F \partial_q \dot{u}  
+			    + \lambda}^T\partial_q F 
+				\bigg] {\textrm d}t 
+		   +    {\mu}^T \partial_{u(0)} g \partial_q u(0)  
+		   +    {\mu}^T \partial_q g.
 
 $$
-Upon optimality, one has $D_q L = D_{\boldsymbol{q}} J$.
+Upon optimality, one has $D_q L = D_{   {q}} J$.
 
 The term in $d_{\dot{u}}$ cannot be easily estimated. An integration by parts gives:
 
 
 $$
-		\int_0^T\boldsymbol{\boldsymbol{\lambda}}^T\partial_{\dot{u}} F  d_{\boldsymbol{q}} \dot{u} {\textrm d}t = 
-		  \left[\boldsymbol{\lambda}^T\partial_{\dot{u}} F  {\textrm d}_{\boldsymbol{q}} u \right]_0^T 
-		   - \int_0^T \left\{\dot{\boldsymbol{\lambda}}^T\partial_{\dot{u}} F  \right. 
-		   \left. + \boldsymbol{\lambda}^T \partial_t \partial_{\dot{u}}F  \right\}d_{\boldsymbol{q}} u {\textrm d}t.
+		\int_0^T   {   {\lambda}}^T\partial_{\dot{u}} F  d_{   {q}} \dot{u} {\textrm d}t = 
+		  \left[   {\lambda}^T\partial_{\dot{u}} F  {\textrm d}_{   {q}} u \right]_0^T 
+		   - \int_0^T \left\{\dot{   {\lambda}}^T\partial_{\dot{u}} F  \right. 
+		   \left. +    {\lambda}^T \partial_t \partial_{\dot{u}}F  \right\}d_{   {q}} u {\textrm d}t.
 $$
 The term associated with ${\textrm d}_{\dot{u}}$ can now be replaced.
 
@@ -104,37 +97,37 @@ Ordering terms leads to:
 
 $$
 		&D_q L\left   = 
-		   \int_0^T  \Bigg[  \bigg(\partial_{u}j\mypar{u,\boldsymbol{q},t}  +  \boldsymbol{\lambda}^T \partial_{u}  F    
-		   - \big\{\dot{\boldsymbol{\lambda}}^T\partial_{\dot{u}} F    
-		   +  \boldsymbol{\lambda}^T \partial_t\partial_{\dot{u}}F   \big\}\bigg) {\textrm d}_{\boldsymbol{q}} u   
-		  + \partial_{\boldsymbol{q}} j       + \boldsymbol{\lambda}^T\partial_qF   \Bigg] {\textrm d}t  
-		  + \bigg(\boldsymbol{\mu}^T \partial_{u} g  
-		  -  \left. \boldsymbol{\lambda}^T\partial_{\dot{u}} F   \bigg)
+		   \int_0^T  \Bigg[  \bigg(\partial_{u}j\mypar{u,   {q},t}  +     {\lambda}^T \partial_{u}  F    
+		   - \big\{\dot{   {\lambda}}^T\partial_{\dot{u}} F    
+		   +     {\lambda}^T \partial_t\partial_{\dot{u}}F   \big\}\bigg) {\textrm d}_{   {q}} u   
+		  + \partial_{   {q}} j       +    {\lambda}^T\partial_qF   \Bigg] {\textrm d}t  
+		  + \bigg(   {\mu}^T \partial_{u} g  
+		  -  \left.    {\lambda}^T\partial_{\dot{u}} F   \bigg)
 		\right|_0 dq_{u(0)}  
-	   +  \boldsymbol{\mu}^T \partial_{\boldsymbol{q}} g    
-	   +  \left.\bigg(\boldsymbol{\lambda}^T\partial_{\dot{u}} F  \bigg)\right|_T {\textrm d}_{\boldsymbol{q}} u(T)
+	   +     {\mu}^T \partial_{   {q}} g    
+	   +  \left.\bigg(   {\lambda}^T\partial_{\dot{u}} F  \bigg)\right|_T {\textrm d}_{   {q}} u(T)
 
 $$
 
-Proper choices for $\boldsymbol{\lambda}$ and $\boldsymbol{\mu}$ allow to simplify the expression of $D_q L$.
-The choice of $\boldsymbol{\lambda}\mypar{T} = \boldsymbol{0}$ nullifies the term $\left.\bigg(\boldsymbol{\lambda}^T\partial_{\dot{u}} F  \bigg)\right|_T {\textrm d}_{\boldsymbol{q}} u(T)$.
-$\boldsymbol{\lambda}$ can then be chosen as the solution of the so-called adjoint equation,~\cite{Ledimet1986,Talagrand1997}:
+Proper choices for $   {\lambda}$ and $   {\mu}$ allow to simplify the expression of $D_q L$.
+The choice of $   {\lambda}\mypar{T} =    {0}$ nullifies the term $\left.\bigg(   {\lambda}^T\partial_{\dot{u}} F  \bigg)\right|_T {\textrm d}_{   {q}} u(T)$.
+$   {\lambda}$ can then be chosen as the solution of the so-called adjoint equation,~\cite{Ledimet1986,Talagrand1997}:
 $$
 
-		 \bigg(\partial_{u}j    + \boldsymbol{\lambda}^T \partial_{u}  F   
-		   - \big\{\dot{\boldsymbol{\lambda}}^T\partial_{\dot{u}} F   
-		   + \boldsymbol{\lambda}^T \partial_t\partial_{\dot{u}}F  \big\}\bigg) = \boldsymbol{0},
+		 \bigg(\partial_{u}j    +    {\lambda}^T \partial_{u}  F   
+		   - \big\{\dot{   {\lambda}}^T\partial_{\dot{u}} F   
+		   +    {\lambda}^T \partial_t\partial_{\dot{u}}F  \big\}\bigg) =    {0},
 
 $$
 integrated backwards in time. 
-Finally, the Lagrange parameter $\boldsymbol{\mu}$ is set so that it nullifies the component associated with $dq_{u(0)}$:
-$$ \left.\mya{\boldsymbol{\mu}^T \partial_{u} g   - \boldsymbol{\lambda}^T\partial_{\dot{u}} F   }\right|_0 = \boldsymbol{0}.$$
+Finally, the Lagrange parameter $   {\mu}$ is set so that it nullifies the component associated with $dq_{u(0)}$:
+$$ \left.\mya{   {\mu}^T \partial_{u} g   -    {\lambda}^T\partial_{\dot{u}} F   }\right|_0 =    {0}.$$
 Then, computing $D_q L$, hence $ D_qJ$, is achieved by the integration of:
 $$
 
-		 D_qJ\mypar{u,\boldsymbol{q}} = 
-		  \int_0^T  \bigg[  \partial_{\boldsymbol{q}} j     + \boldsymbol{\lambda}^T\partial_qF   \bigg] {\textrm d}t 
-		&   +   \boldsymbol{\mu}^T \partial_{\boldsymbol{q}} g   .
+		 D_qJ\mypar{u,   {q}} = 
+		  \int_0^T  \bigg[  \partial_{   {q}} j     +    {\lambda}^T\partial_qF   \bigg] {\textrm d}t 
+		&   +      {\mu}^T \partial_{   {q}} g   .
 
 $$
 
