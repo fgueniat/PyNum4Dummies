@@ -61,7 +61,7 @@ $$
 F(u,\dot{u},q,t) = 0
 $$
 
-For instance, considering $q\equiv \{q_c,q_u}$, and if the equation is the Burgers' equation, we have
+For instance, considering $q\equiv \{q_c,q_u\}$, and the Burgers' equation, we have
 
 $$
 F(u,\dot{u},q,t) := \frac{\partial u} {\partial t} + q_c u \frac{\partial u}{\partial x}  =0
@@ -123,8 +123,8 @@ The term in $\partial_{\dot{u}}$ cannot be easily estimated. An integration by p
 
 
 $$
-		\int_0^T   {   {\lambda}}^T\partial_{\dot{u}} F  d_{   {q}} \dot{u} {\textrm d}t = 
-		  \left[   {\lambda}^T\partial_{\dot{u}} F  {\textrm d}_{   {q}} u \right]_0^T 
+		\int_0^T   {   {\lambda}}^T\partial_{\dot{u}} F  \partial_q \dot{u} {\textrm d}t = 
+		  \left[   {\lambda}^T\partial_{\dot{u}} F  \partial_q u \right]_0^T 
 		   - \int_0^T \left\{\dot{   {\lambda}}^T\partial_{\dot{u}} F  \right. 
 		   \left. +    {\lambda}^T \partial_t \partial_{\dot{u}}F  \right\} \partial_q u {\textrm d}t.
 $$
@@ -161,7 +161,7 @@ $$
 $$
 
 Proper choices for $ \lambda $ and $\mu$ allow to simplify the expression of $D_q L$.
-The choice of $ \lambda (T) =  0$ nullifies the term $\left.\bigg( \lambda^T \partial_{ \dot{u} } F  \bigg) \right|_T {\textrm d}_q u(T)$.
+The choice of $ \lambda (T) =  0$ nullifies the term $\left.\bigg( \lambda^T \partial_{ \dot{u} } F  \bigg) \right|_T \partial_q u(T)$.
 $ \lambda $ can then be chosen as the solution of the so-called adjoint equation(see Ledimet 1986,Talagrand 1997):
 
 $$
