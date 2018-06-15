@@ -78,6 +78,7 @@ $$
    L\bigg(u,\dot{u},q,\lambda,\mu\bigg) = 
     \int_0^T \bigg[ j  +  {\lambda}^T F  \bigg] {\textrm d}t + {\mu}^T g,
 $$
+
 where $^T$ is the transpose operator. 
 Naturally, both $u$ and $\dot{u}$ are considered as variables.
 
