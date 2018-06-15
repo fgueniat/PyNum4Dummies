@@ -5,8 +5,8 @@ This project consists in a library solver_tools and a bunch of python scripts.
 The library aims at solving "easy" 1d partial differential equations (pdes), for education and reasearach.
 Exemples of these pdes are:
 * The heat equation $$ \frac{\partial u}{\partial t} = \alpha \frac{\partial^2 u}{\partial x^2} $$
-* Burger equation $$ \frac{partial u} {\partial t} = -u \frac{\partial u}{\partial x} $$
-* The advection equation $$ \frac{partial u} {\partial t} = -c \frac{\partial u}{\partial x} $$
+* Burger equation $$ \frac{\partial u} {\partial t} = -u \frac{\partial u}{\partial x} $$
+* The advection equation $$ \frac{\partial u} {\partial t} = -c \frac{\partial u}{\partial x} $$
 
 The librairie contains:
 * a function to integrate the equation $ \frac{\partial u}{\partial t} = RHS(u,x,t) $

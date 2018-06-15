@@ -5,8 +5,8 @@ This project consists in a library solver_tools and a bunch of python scripts.
 The library aims at solving "easy" 1d partial differential equations (pdes), for education and reasearach.
 Exemples of these pdes are:
 * The heat equation <p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/99bf311583d305ed37ca20321fd06a39.svg?invert_in_darkmode" align=middle width=81.82812pt height=35.749725pt/></p>
-* Burger equation <p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/034ecdc5c99727e321e0c207b2f2b522.svg?invert_in_darkmode" align=middle width=126.73815pt height=33.769395pt/></p>
-* The advection equation <p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/8c06bc4a89485084ada1a2d1b87a7c9f.svg?invert_in_darkmode" align=middle width=124.45026pt height=33.769395pt/></p>
+* Burger equation <p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/849b24bd15261e84b00560da71973951.svg?invert_in_darkmode" align=middle width=86.029185pt height=33.769395pt/></p>
+* The advection equation <p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/487301be0e38f751867d3d2c524e520b.svg?invert_in_darkmode" align=middle width=83.741295pt height=33.769395pt/></p>
 
 The librairie contains:
 * a function to integrate the equation <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/940c85b13e2fb5a4a59056b59c583cf0.svg?invert_in_darkmode" align=middle width=129.80715pt height=28.86675pt/>
