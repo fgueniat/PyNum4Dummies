@@ -91,7 +91,7 @@ Ordering terms leads to:
 
 Proper choices for <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/0ae3f8e52e8833a55be05df21031a4fc.svg?invert_in_darkmode" align=middle width=9.553335pt height=22.74591pt/> and <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/07617f9d8fe48b4a7b3f523d6730eef0.svg?invert_in_darkmode" align=middle width=9.86799pt height=14.10255pt/> allow to simplify the expression of <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/77f72004c2606e02e7d9060c80ccca7e.svg?invert_in_darkmode" align=middle width=31.963965pt height=22.38192pt/>.
 The choice of <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/544873064b19aa6af6bc1a0f71eddf75.svg?invert_in_darkmode" align=middle width=64.20282pt height=24.56553pt/> nullifies the term <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/99a630258fff19b09dad026d69902c4e.svg?invert_in_darkmode" align=middle width=143.25399pt height=47.6718pt/>.
-<img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/0ae3f8e52e8833a55be05df21031a4fc.svg?invert_in_darkmode" align=middle width=9.553335pt height=22.74591pt/> can then be chosen as the solution of the so-called adjoint equation,~\cite{Ledimet1986,Talagrand1997}:
+<img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/0ae3f8e52e8833a55be05df21031a4fc.svg?invert_in_darkmode" align=middle width=9.553335pt height=22.74591pt/> can then be chosen as the solution of the so-called adjoint equation(see Ledimet 1986,Talagrand 1997):
 
 <p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/16cd4b56c6e04130965b7a0b2f11f729.svg?invert_in_darkmode" align=middle width=333.12345pt height=39.30498pt/></p>
 integrated backwards in time. 

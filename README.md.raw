@@ -142,7 +142,7 @@ $$
 
 Proper choices for $ \lambda $ and $\mu$ allow to simplify the expression of $D_q L$.
 The choice of $ \lambda (T) =  0$ nullifies the term $\left.\bigg( \lambda^T \partial_{ \dot{u} } F  \bigg) \right|_T {\textrm d}_q u(T)$.
-$ \lambda $ can then be chosen as the solution of the so-called adjoint equation,~\cite{Ledimet1986,Talagrand1997}:
+$ \lambda $ can then be chosen as the solution of the so-called adjoint equation(see Ledimet 1986,Talagrand 1997):
 
 $$
 		\bigg( 
