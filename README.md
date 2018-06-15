@@ -68,7 +68,6 @@ Finite differentiation is out of reach if the size of q is large.
 For that, one can introduce the Lagrangian <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/ca0f3a73abc788c4c397d1c983cc5b31.svg?invert_in_darkmode" align=middle width=11.14542pt height=22.38192pt/>, associated with the two Lagrange parameters <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/fd8be73b54f5436a5cd2e73ba9b6bfa9.svg?invert_in_darkmode" align=middle width=9.553335pt height=22.74591pt/> and <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/07617f9d8fe48b4a7b3f523d6730eef0.svg?invert_in_darkmode" align=middle width=9.86799pt height=14.10255pt/>:
 
 <p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/a518e38eaed61e3ae0f0b3b2339d5646.svg?invert_in_darkmode" align=middle width=308.07975pt height=41.616135pt/></p>
-
 where <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/0103700fa3db36d24bf7a94ad80ae6a5.svg?invert_in_darkmode" align=middle width=9.498225pt height=27.59823pt/> is the transpose operator. 
 Naturally, both <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/6dbb78540bd76da3f1625782d42d6d16.svg?invert_in_darkmode" align=middle width=9.375135pt height=14.10255pt/> and <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/02578075daf3b73a16fbd736847ed846.svg?invert_in_darkmode" align=middle width=9.375135pt height=21.87504pt/> are considered as variables.
 
@@ -88,16 +87,21 @@ The term associated with <img src="https://rawgit.com/fgueniat/PyNum4Dummies/mas
 
 Ordering terms leads to:
 
-<p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/1e698cb5c759f60facba494875ddb23a.svg?invert_in_darkmode" align=middle width=948.189pt height=42.58287pt/></p>
+<p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/833c8c9603b1acb0cee91506a1b05514.svg?invert_in_darkmode" align=middle width=947.7501pt height=42.58287pt/></p>
 
 Proper choices for <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/0ae3f8e52e8833a55be05df21031a4fc.svg?invert_in_darkmode" align=middle width=9.553335pt height=22.74591pt/> and <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/07617f9d8fe48b4a7b3f523d6730eef0.svg?invert_in_darkmode" align=middle width=9.86799pt height=14.10255pt/> allow to simplify the expression of <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/77f72004c2606e02e7d9060c80ccca7e.svg?invert_in_darkmode" align=middle width=31.963965pt height=22.38192pt/>.
 The choice of <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/544873064b19aa6af6bc1a0f71eddf75.svg?invert_in_darkmode" align=middle width=64.20282pt height=24.56553pt/> nullifies the term <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/99a630258fff19b09dad026d69902c4e.svg?invert_in_darkmode" align=middle width=143.25399pt height=47.6718pt/>.
 <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/0ae3f8e52e8833a55be05df21031a4fc.svg?invert_in_darkmode" align=middle width=9.553335pt height=22.74591pt/> can then be chosen as the solution of the so-called adjoint equation,~\cite{Ledimet1986,Talagrand1997}:
+
 <p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/16cd4b56c6e04130965b7a0b2f11f729.svg?invert_in_darkmode" align=middle width=333.12345pt height=39.30498pt/></p>
 integrated backwards in time. 
-Finally, the Lagrange parameter <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/727ea98f01155866832ba9919f928160.svg?invert_in_darkmode" align=middle width=9.86799pt height=14.10255pt/> is set so that it nullifies the component associated with <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/eab061cb04530c077526ab0ef8b7bfd8.svg?invert_in_darkmode" align=middle width=40.34184pt height=22.74591pt/>:
+
+Finally, the Lagrange parameter <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/4d01d1168740312c9cbf4c58d10ac5f7.svg?invert_in_darkmode" align=middle width=9.86799pt height=14.10255pt/> is set so that it nullifies the component associated with <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/899d25373b79ec2a7e855b098bf9b9b8.svg?invert_in_darkmode" align=middle width=46.255605pt height=24.56553pt/>:
+
 <p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/ca0d3b418b6e39f36a643cb76db332b8.svg?invert_in_darkmode" align=middle width=188.34255pt height=40.274355pt/></p>
+
 Then, computing <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/77f72004c2606e02e7d9060c80ccca7e.svg?invert_in_darkmode" align=middle width=31.963965pt height=22.38192pt/>, hence <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/8116b309283a1964c0488ce84f61c376.svg?invert_in_darkmode" align=middle width=31.474905pt height=22.38192pt/>, is achieved by the integration of:
+
 <p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/ada9d358292a2ddd134f8456fade4925.svg?invert_in_darkmode" align=middle width=325.57965pt height=41.616135pt/></p>
 
 

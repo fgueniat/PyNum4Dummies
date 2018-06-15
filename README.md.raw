@@ -79,7 +79,6 @@ $$
    L\bigg(u,\dot{u},q,\lambda,\mu\bigg) = 
     \int_0^T \bigg[ j  +  {\lambda}^T F  \bigg] {\textrm d}t + {\mu}^T g,
 $$
-
 where $^T$ is the transpose operator. 
 Naturally, both $u$ and $\dot{u}$ are considered as variables.
 
@@ -138,12 +137,13 @@ $$
 			\bigg(  
 				\lambda^T \partial_{ \dot{u} } F  
 			\bigg) 
-		\right|_T { \textrm d }_q u(T)
+		\right|_T \partial_q u(T)
 $$
 
 Proper choices for $ \lambda $ and $\mu$ allow to simplify the expression of $D_q L$.
 The choice of $ \lambda (T) =  0$ nullifies the term $\left.\bigg( \lambda^T \partial_{ \dot{u} } F  \bigg) \right|_T {\textrm d}_q u(T)$.
 $ \lambda $ can then be chosen as the solution of the so-called adjoint equation,~\cite{Ledimet1986,Talagrand1997}:
+
 $$
 		\bigg( 
 			\partial_u j    +    \lambda^T \partial_u  F  
@@ -155,9 +155,13 @@ $$
 			=  0,
 $$
 integrated backwards in time. 
-Finally, the Lagrange parameter $   {\mu}$ is set so that it nullifies the component associated with $dq_{u(0)}$:
+
+Finally, the Lagrange parameter $ \mu $ is set so that it nullifies the component associated with $\partial_q u(0)$:
+
 $$ \left.  \bigg\{ \mu^T \partial_u g   -  \lambda^T\partial_{\dot{u}} F   \bigg\} \right|_0 = 0.$$
+
 Then, computing $D_q L$, hence $ D_qJ$, is achieved by the integration of:
+
 $$
 		 D_qJ \bigg(u,q\bigg) = 
 		  \int_0^T  \bigg[  \partial_q j     +  \lambda ^T\partial_q F  \bigg] {\textrm d}t 
