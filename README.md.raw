@@ -22,11 +22,11 @@ solver_tools.py
 It contains:
 * a function to integrate the equation $ \frac{\partial u}{\partial t} = RHS(u,x,t) $
 * discretization of:
-	* space derivative: $f(a,u,x,t) = a \frac{\partial u}{\partial x}$
-    	* LUD
-     	- upwind
-	** second space derivative $f(u,x,t) = \frac{\partial^2 u}{\partial x^2}$
-    	- central_scheme
+  * space derivative: $f(a,u,x,t) = a \frac{\partial u}{\partial x}$
+    - LUD
+    - upwind
+  * second space derivative $f(u,x,t) = \frac{\partial^2 u}{\partial x^2}$
+    - central_scheme
 * cfl (compute and print the cfl number)
 
 Other functions will be implemented, to derive reduced order models (ROM) of the equation, as well as computing the adjoint variables (see later).
@@ -44,7 +44,6 @@ The various scripts illustrate the use of the library:
 ## Todo:
 * advection: instabilities in LUD when too stiff ? Flux limiter ?
 * adjoint.
-
 
 
 
@@ -74,16 +73,17 @@ $D_q J = \frac{D\,J}{Dq}$.
 
 Finite differentiation is out of reach if the size of q is large.
 
-For that, one can introduce the Lagrangian $ L$, associated with the two Lagrange parameters $   {\lambda}$ and $   {\mu}$:
+For that, one can introduce the Lagrangian $ L$, associated with the two Lagrange parameters $\lambda$ and $\mu$:
 
 $$
    L\bigg(u,\dot{u},q,\lambda,\mu\bigg) = 
     \int_0^T \bigg[ j  +  {\lambda}^T F  \bigg] {\textrm d}t + {\mu}^T g,
 $$
+
 where $^T$ is the transpose operator. 
 Naturally, both $u$ and $\dot{u}$ are considered as variables.
 
-As $F$ and $g$ are null by construction, $   {\lambda}$ and $   {\mu}$ can be designed specifically to alleviate the computations.
+As $F$ and $g$ are null by construction, $\lambda$ and $\mu$ can be designed specifically to alleviate the computations.
 
 The gradient $D_q L = \frac{D L}{Dq}$ of $ L$ is
 $$
@@ -97,9 +97,10 @@ $$
 		   +    {\mu}^T \partial_{u(0)} g \partial_q u(0)  
 		   +    {\mu}^T \partial_q g.
 $$
-Upon optimality, one has $D_q L = D_{   {q}} J$.
 
-The term in $d_{\dot{u}}$ cannot be easily estimated. An integration by parts gives:
+Upon optimality, one has $D_q L = D_q J$.
+
+The term in $\partial_{\dot{u}}$ cannot be easily estimated. An integration by parts gives:
 
 
 $$
@@ -108,7 +109,8 @@ $$
 		   - \int_0^T \left\{\dot{   {\lambda}}^T\partial_{\dot{u}} F  \right. 
 		   \left. +    {\lambda}^T \partial_t \partial_{\dot{u}}F  \right\}d_{   {q}} u {\textrm d}t.
 $$
-The term associated with ${\textrm d}_{ \dot{u} }$ can now be replaced.
+
+The term associated with $\partial_{ \dot{u} }$ can now be replaced.
 
 Ordering terms leads to:
 
