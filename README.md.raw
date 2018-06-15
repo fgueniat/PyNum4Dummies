@@ -1,18 +1,29 @@
 # PyNum4Dummies
 
+## Aims
 This project consists in a library solver_tools and a bunch of python scripts.
 
-The library aims at solving "easy" 1d partial differential equations (pdes), for education and reasearach.
-Exemples of these pdes are:
+The library aims at solving "easy" 1d partial differential equations (pdes), for education and research.
+
+
+### Exemples of pdes:
 * The heat equation $$ \frac{\partial u}{\partial t} = \alpha \frac{\partial^2 u}{\partial x^2} $$
 * Burger equation $$ \frac{\partial u} {\partial t} = -u \frac{\partial u}{\partial x} $$
 * The advection equation $$ \frac{\partial u} {\partial t} = -c \frac{\partial u}{\partial x} $$
 
-The librairie contains:
+
+## Files
+The project consists in a library and a collection of scripts that illustrates it.
+
+
+### The librairie 
+solver_tools.py
+
+It contains:
 * a function to integrate the equation $ \frac{\partial u}{\partial t} = RHS(u,x,t) $
 * discretization of:
-	** space derivative: $f(a,u,x,t) = a \frac{\partial u}{\partial x}$
-    	- LUD
+	* space derivative: $f(a,u,x,t) = a \frac{\partial u}{\partial x}$
+    	* LUD
      	- upwind
 	** second space derivative $f(u,x,t) = \frac{\partial^2 u}{\partial x^2}$
     	- central_scheme
@@ -20,9 +31,17 @@ The librairie contains:
 
 Other functions will be implemented, to derive reduced order models (ROM) of the equation, as well as computing the adjoint variables (see later).
 
-The various scripts illustrate the use of the library.
+### The scripts
+The various scripts illustrate the use of the library:
+* script_advection.py - advection equation
+* script_test_accuracy.py - test the accuracy of the solver
+* script_unsteady_bc.py - illlustrates unsteady boundary conditions
+* script_burgers_inviscid.py - inviscid burger equation
+* script_viscous_burgers.py - viscous burger equation
+* script_operators.py - general equation
 
-Todo:
+
+## Todo:
 * advection: instabilities in LUD when too stiff ? Flux limiter ?
 * adjoint.
 
@@ -30,8 +49,7 @@ Todo:
 
 
 
-
-Computing the gradient of the cost functional
+# Computing the gradient of the cost functional
 
 We want to look at the problem depending on some parameters:
 
