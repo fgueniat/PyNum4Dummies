@@ -54,10 +54,26 @@ We want to look at the problem depending on some parameters:
 <p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/0d357cfaf830c4e7c0dbc17ab01006b9.svg?invert_in_darkmode" align=middle width=155.940675pt height=41.121795pt/></p>
 s.t. the physics:
 <p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/16283e6f9f4969cb2a841640a223eb9a.svg?invert_in_darkmode" align=middle width=110.076945pt height=16.376943pt/></p>
-and considering that the initial conditions are (potentially) related to the parameters q with:
+
+For instance, considering <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/2c3597bc2c5dab9ac8fa5584df765e81.svg?invert_in_darkmode" align=middle width=74.3094pt height=24.56553pt/>, and if the equation is the Burgers' equation, we have
+
+<p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/20a29cce006e3e6683509994b60c0ded.svg?invert_in_darkmode" align=middle width=189.3342pt height=33.769395pt/></p>
+
+
+We are also considering that the initial conditions are (potentially) related to the parameters q with:
 <p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/6b1545e49da27eecc71689bc4caec24e.svg?invert_in_darkmode" align=middle width=96.687855pt height=16.376943pt/></p>
 
+
+For instance, if the initial conditions are actually the parameter <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/db690fdb4ebf32ef3722ac5b7d64d136.svg?invert_in_darkmode" align=middle width=15.054105pt height=14.10255pt/>:
+
+<p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/63c8ec8cf1eb756f5d64b30c2406c110.svg?invert_in_darkmode" align=middle width=163.84731pt height=16.376943pt/></p>
+
+
 We want to find the argmin of J.
+This formalism is usefull in numerous situations, e.g.:
+* to identify the parameters of a model that will match some data
+* some initial conditions that will reproduce as good as possible the provided data.
+* more generally any user-defined constrains expressed in the form of <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/8eb543f68dac24748e65e2e4c5fc968c.svg?invert_in_darkmode" align=middle width=10.65636pt height=22.38192pt/>.
 
 Identifying the minimum of the <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/8eb543f68dac24748e65e2e4c5fc968c.svg?invert_in_darkmode" align=middle width=10.65636pt height=22.38192pt/> relies on the gradient of the functional with respect to the parameters:
 <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/8b3f544e88b0a34f6b2c1dff52a7660e.svg?invert_in_darkmode" align=middle width=77.02893pt height=28.61199pt/>. 

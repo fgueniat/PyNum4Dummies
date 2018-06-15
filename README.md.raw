@@ -60,12 +60,32 @@ s.t. the physics:
 $$
 F(u,\dot{u},q,t) = 0
 $$
-and considering that the initial conditions are (potentially) related to the parameters q with:
+
+For instance, considering $q\equiv \{q_c,q_u}$, and if the equation is the Burgers' equation, we have
+
+$$
+F(u,\dot{u},q,t) = \frac{\partial u} {\partial t} + q_c u \frac{\partial u}{\partial x}  
+$$
+
+
+We are also considering that the initial conditions are (potentially) related to the parameters q with:
 $$
 g(u(0),q) = 0
 $$
 
+
+For instance, if the initial conditions are actually the parameter $q_u$:
+
+$$ 
+	g(u(0),q) := u(0) - q_u.
+$$
+
+
 We want to find the argmin of J.
+This formalism is usefull in numerous situations, e.g.:
+* to identify the parameters of a model that will match some data
+* some initial conditions that will reproduce as good as possible the provided data.
+* more generally any user-defined constrains expressed in the form of $J$.
 
 Identifying the minimum of the $J$ relies on the gradient of the functional with respect to the parameters:
 $D_q J = \frac{D\,J}{Dq}$. 
