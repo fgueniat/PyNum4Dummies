@@ -73,12 +73,11 @@ $$
 			\int_0^T  \bigg[
 				\partial_u j \partial_q u  +\partial_q j 
 				+ \lambda^T \partial_u F \partial_q u 
-			    + \lambda}^T\partial_{ \dot{u} } F \partial_q \dot{u}  
-			    + \lambda}^T\partial_q F 
+			    + \lambda^T\partial_{ \dot{u} } F \partial_q \dot{u}  
+			    + \lambda^T\partial_q F 
 				\bigg] {\textrm d}t 
 		   +    {\mu}^T \partial_{u(0)} g \partial_q u(0)  
 		   +    {\mu}^T \partial_q g.
-
 $$
 Upon optimality, one has $D_q L = D_{   {q}} J$.
 
@@ -96,39 +95,53 @@ The term associated with ${\textrm d}_{\dot{u}}$ can now be replaced.
 Ordering terms leads to:
 
 $$
-		&D_q L\left   = 
-		   \int_0^T  \Bigg[  \bigg(\partial_{u}j\mypar{u,   {q},t}  +     {\lambda}^T \partial_{u}  F    
-		   - \big\{\dot{   {\lambda}}^T\partial_{\dot{u}} F    
-		   +     {\lambda}^T \partial_t\partial_{\dot{u}}F   \big\}\bigg) {\textrm d}_{   {q}} u   
-		  + \partial_{   {q}} j       +    {\lambda}^T\partial_qF   \Bigg] {\textrm d}t  
-		  + \bigg(   {\mu}^T \partial_{u} g  
-		  -  \left.    {\lambda}^T\partial_{\dot{u}} F   \bigg)
-		\right|_0 dq_{u(0)}  
-	   +     {\mu}^T \partial_{   {q}} g    
-	   +  \left.\bigg(   {\lambda}^T\partial_{\dot{u}} F  \bigg)\right|_T {\textrm d}_{   {q}} u(T)
-
+	D_q L  = 
+		\int_0^T  
+			\bigg[
+					\bigg(
+						\partial_u j  + \lambda^T \partial_u  F
+						-\bigg\{ 
+							\dot{ \lambda}^T \partial_{ \dot{u} } F 
+				   			+ \lambda^T \partial_t \partial_{ \dot{u} } F   
+						\bigg\}
+					\bigg) {\textrm d}_q u
+		 	+ \partial_q j + \lambda^T\partial_q F   
+			\bigg] {\textrm d}t  
+	  	+ \left.
+			\bigg(
+			   \mu^T \partial_u g  
+	 		 	- \lambda^T \partial_{ \dot{u} } F   
+			\bigg)
+		\right|_0 \partial_q u(0)
+ 		+ \mu^T \partial_q g 
+	   	+ \left.
+			\bigg(  
+				\lambda^T \partial_{ \dot{u} } F  
+			\bigg) 
+		\right|_T { \textrm d }_q u(T)
 $$
 
-Proper choices for $   {\lambda}$ and $   {\mu}$ allow to simplify the expression of $D_q L$.
-The choice of $   {\lambda}\mypar{T} =    {0}$ nullifies the term $\left.\bigg(   {\lambda}^T\partial_{\dot{u}} F  \bigg)\right|_T {\textrm d}_{   {q}} u(T)$.
-$   {\lambda}$ can then be chosen as the solution of the so-called adjoint equation,~\cite{Ledimet1986,Talagrand1997}:
+Proper choices for $ \lambda $ and $\mu$ allow to simplify the expression of $D_q L$.
+The choice of $ \lambda (T) =  0$ nullifies the term $\left.\bigg( \lambda^T \partial_{ \dot{u} } F  \bigg) \right|_T {\textrm d}_q u(T)$.
+$ \lambda $ can then be chosen as the solution of the so-called adjoint equation,~\cite{Ledimet1986,Talagrand1997}:
 $$
-
-		 \bigg(\partial_{u}j    +    {\lambda}^T \partial_{u}  F   
-		   - \big\{\dot{   {\lambda}}^T\partial_{\dot{u}} F   
-		   +    {\lambda}^T \partial_t\partial_{\dot{u}}F  \big\}\bigg) =    {0},
-
+		\bigg( 
+			\partial_u j    +    \lambda^T \partial_u  F  
+			- \bigg\{ 
+					\dot{\lambda}^T \partial_{ \dot{u} } F  
+				   + \lambda^T \partial_t \partial_{ \dot{u} } F   
+			\bigg\}
+		\bigg) 
+			=  0,
 $$
 integrated backwards in time. 
 Finally, the Lagrange parameter $   {\mu}$ is set so that it nullifies the component associated with $dq_{u(0)}$:
-$$ \left.\mya{   {\mu}^T \partial_{u} g   -    {\lambda}^T\partial_{\dot{u}} F   }\right|_0 =    {0}.$$
+$$ \left.  \bigg\{ \mu^T \partial_u g   -  \lambda^T\partial_{\dot{u}} F   \bigg\} \right|_0 = 0.$$
 Then, computing $D_q L$, hence $ D_qJ$, is achieved by the integration of:
 $$
-
-		 D_qJ\mypar{u,   {q}} = 
-		  \int_0^T  \bigg[  \partial_{   {q}} j     +    {\lambda}^T\partial_qF   \bigg] {\textrm d}t 
-		&   +      {\mu}^T \partial_{   {q}} g   .
-
+		 D_qJ \bigg(u,q\bigg) = 
+		  \int_0^T  \bigg[  \partial_q j     +  \lambda ^T\partial_q F  \bigg] {\textrm d}t 
+		  +      \mu^T \partial_q g.
 $$
 
 
