@@ -72,10 +72,10 @@ $D_q J = \frac{D\,J}{Dq}$.
 
 Finite differentiation is out of reach if the size of q is large.
 
-For that, one can introduce the Lagrangian $ L$, associated with the two Lagrange parameters $\lambda$ and $\mu$:
+For that, one can introduce the Lagrangian $ L := L \bigg(u,\dot{u},q,\lambda,\mu\bigg)$, associated with the two Lagrange parameters $\lambda$ and $\mu$ (variables are dropped for visibility):
 
 $$
-   L\bigg(u,\dot{u},q,\lambda,\mu\bigg) = 
+   L = 
     \int_0^T \bigg[ j  +  {\lambda}^T F  \bigg] {\textrm d}t + {\mu}^T g,
 $$
 
