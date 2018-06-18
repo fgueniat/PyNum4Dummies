@@ -143,7 +143,13 @@ def RHS(u,x,t,dt,operators = None ):
     return rhs
 
 
-def integration(u,x,t,dt,operators=None,method ='RK4',bc_type = 'periodic',bcs = None,n_g = param_n_ghost,return_rhs = False):
+def integration(u, x, t, dt, operators = None, method = 'RK4', bc_type = 'periodic', bcs = None, n_g = param_n_ghost, return_rhs = False):
+    '''
+    bind to integration_forward
+    '''
+    return integration_forward(u,x,t,dt, operators = operators, method = method, bc_type = bc_type, bcs = bcs,n_g = n_g, return_rhs = return_rhs)
+
+def integration_forward(u, x, t, dt, operators = None, method = 'RK4', bc_type = 'periodic', bcs = None, n_g = param_n_ghost, return_rhs = False):
     '''
     Integrate a problem.
     u is the quantity to solve
@@ -151,7 +157,7 @@ def integration(u,x,t,dt,operators=None,method ='RK4',bc_type = 'periodic',bcs =
     t is the current time
     dt is the step time
     operators is a list of operators, i.e. functions accepting u,x,t,dt as parameters.
-    It represents the problem to be solve.
+    It represents the problem to be solved.
     e.g., for the advection problem with the velocity c:
     advection = lambda u,x,t,dt: c * LUD(u,x,t,dt)
     operators = [[advection]]
@@ -186,4 +192,26 @@ def integration(u,x,t,dt,operators=None,method ='RK4',bc_type = 'periodic',bcs =
         return u,rhs
     else:
         return u
+
+
+
+def integration_backward_adjoint(u,x,t,dt, lambda_adjoint, operators_du, operators_dup, operators_dtdu, cost_function_du, method = 'RK4', n_g = param_n_ghost):
+    '''
+    Integrate the adjoint problem.
+    lambda_adjoint is the quantity to solve
+    u is the solution at time t
+    x is the space
+    t is the current time
+    dt is the step time
+    operators_ are lists of operators, i.e. functions accepting u,x,t,dt as parameters.
+    It represents the problem to be solved.
+    du means partial derivative wrt u.
+    dup means partial derivative wrt du/dt.
+    dtdu means partial derivative wrt time then to u.
+
+    method is the integration method. Current choice among 'RK4' and 'EF'.
+    n_g is the size of the sponge zone
+    '''
+    pass
+
 
