@@ -59,6 +59,9 @@ For instance, considering <img src="https://rawgit.com/fgueniat/PyNum4Dummies/ma
 
 <p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/efede7cdc7c66e46783506cfef0a055a.svg?invert_in_darkmode" align=middle width=225.91305pt height=33.769395pt/></p>
 
+If the cost function means fitting the model on available data <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/d4378ba898213096600125929214f90a.svg?invert_in_darkmode" align=middle width=27.270705pt height=24.56553pt/>, then, one have:
+
+<p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/eeb1823bd9e58f2bb948adf7ae7eec3f.svg?invert_in_darkmode" align=middle width=173.59815pt height=16.376943pt/></p>
 
 We are also considering that the initial conditions are (potentially) related to the parameters q with:
 <p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/6b1545e49da27eecc71689bc4caec24e.svg?invert_in_darkmode" align=middle width=96.687855pt height=16.376943pt/></p>

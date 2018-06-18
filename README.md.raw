@@ -67,6 +67,11 @@ $$
 F(u,\dot{u},q,t) := \frac{\partial u} {\partial t} + q_c u \frac{\partial u}{\partial x}  =0
 $$
 
+If the cost function means fitting the model on available data $y(t)$, then, one have:
+
+$$
+j(u,q,t) := |u(t) - y(t)|.
+$$
 
 We are also considering that the initial conditions are (potentially) related to the parameters q with:
 $$
