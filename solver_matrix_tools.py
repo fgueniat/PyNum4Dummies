@@ -326,19 +326,20 @@ def integration_backward_mat(lambda_,u, x, t, dt, p, operators = None, rhs_forci
     p,_ = ghost(p,x,bc_type = bc_type,bcs = bcs)
     u,x = ghost(u,x,bc_type = bc_type,bcs = bcs)
     #
+    if rhs_forcing is None: 
+        rhs_forcing = lambda u,x,t,dt,p: np.zeros(x.size)
+    #
     if method == 'EF': #Euler
         if Full_Operator is None:
             Full_Operator = RHS_mat_adjoint(lambda_,u,x,t,dt,operators = operators)
         #
-        A = np.eye(u.size) + dt * Full_Operator
-        u = np.dot(Full_Operator,u) + dt * rhs_forcing(u,x,t,dt)
+        A = np.eye(lambdas_.size) + dt * Full_Operator
+        lambda_ = np.dot(Full_Operator,lambda_) + dt * rhs_forcing(lambda_,u,x,t,dt)
     #
-    if rhs_forcing is None: 
-        rhs_forcing = lambda u,x,t,dt,p: np.zeros(x.size)
     #
     if method == 'RK4':
         if Full_Operator is None:
-            f = lambda lambda_,t,p: np.dot( RHS_mat_adjoint(lambda_,p[0],p[1],t,p[2],operators = p[3]) ,u) + rhs_forcing(lambda_,p[0],p[1],t,p[2],p[4])
+            f = lambda lambda_,t,p: np.dot( RHS_mat_adjoint(lambda_,p[0],p[1],t,p[2],operators = p[3]) ,lambda_) + rhs_forcing(lambda_,p[0],p[1],t,p[2],p[4])
             rhs = RK4(f, lambda_, t, dt,p=[u,x,dt,operators,p])
         else: 
             f = lambda lambda_,t,p: np.dot(Full_Operator,lambda_) + dt * rhs_forcing(lambda_,p[0],p[1],t,p[2],p[3])
