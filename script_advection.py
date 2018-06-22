@@ -17,7 +17,7 @@ method = 'RK4'
 # physics
 c_0 = 1.
 #space
-n_x = 500
+n_x = 200
 xmin,xmax = -5.,5.
 x = np.linspace(xmin,xmax,n_x)
 
@@ -28,7 +28,7 @@ n_it = int(tmax/dt)
 time = t0 + dt*np.arange(n_it)
 
 # Initial Conditions
-s_dev2, mu = .02, 0.
+s_dev2, mu = .1, 0.
 u_background = 0.
 u0  = np.exp(- (x-mu)**2 / (2. * s_dev2) ) / np.sqrt(2. * np.pi * s_dev2)
 u0 += u_background

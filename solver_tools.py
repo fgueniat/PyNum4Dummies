@@ -72,7 +72,7 @@ def cfl(u,x,dt):
     '''
     print the cfl number
     '''
-    print np.max(u)*dt/np.max(np.diff(x))
+    print (np.max(u)*dt/np.max(np.diff(x)))
 
 def ghost(u,x,bc_type='periodic',bcs = None ,n_g=param_n_ghost):
     '''
@@ -169,7 +169,7 @@ def integration_forward(u, x, t, dt, operators = None, method = 'RK4', bc_type =
     '''
     #
     if operators is None: 
-        print 'no problem provided'
+        print('no problem provided')
         return -1
     #
     if method == 'EF': #Euler
@@ -180,12 +180,9 @@ def integration_forward(u, x, t, dt, operators = None, method = 'RK4', bc_type =
     #
     if method == 'RK4':
         u,x = ghost(u,x,bc_type = bc_type,bcs = bcs)
-        k1 = dt * RHS(u,x,t,dt,operators = operators)
-        k2 = dt * RHS(u+k1/2.,x,t+dt/2.,dt,operators = operators)
-        k3 = dt * RHS(u+k2/2.,x,t+dt/2.,dt,operators = operators)
-        k4 = dt * RHS(u+k3,x,t+dt,dt,operators = operators)
-        u = u + (k1 + 2.*k2 + 2.*k3 + k4)/6.
-        rhs = (k1 + 2.*k2 + 2.*k3 + k4)/6.
+        f = lambda u,t: RHS(u,x,t,dt,operators = operators)
+        rhs = RK4(f, u, t, dt)
+        u = u+rhs
         u,x = deghost(u,x,n_g = n_g)
     #
     if return_rhs is True:
@@ -194,6 +191,12 @@ def integration_forward(u, x, t, dt, operators = None, method = 'RK4', bc_type =
         return u
 
 
+def RK4(f,x,t,dt):
+    k1 = dt * f(x,t)
+    k2 = dt * f(x+k1/2.,t+dt/2.)
+    k3 = dt * f(x+k2/2.,t+dt/2.)
+    k4 = dt * f(x+k3,t+dt)
+    return  (k1 + 2.*k2 + 2.*k3 + k4)/6.
 
 def integration_backward_adjoint(u,x,t,dt, lambda_adjoint, operators_du, operators_dup, operators_dtdu, cost_function_du, method = 'RK4', n_g = param_n_ghost):
     '''
@@ -212,6 +215,7 @@ def integration_backward_adjoint(u,x,t,dt, lambda_adjoint, operators_du, operato
     method is the integration method. Current choice among 'RK4' and 'EF'.
     n_g is the size of the sponge zone
     '''
+
     pass
 
 
