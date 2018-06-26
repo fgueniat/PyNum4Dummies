@@ -54,14 +54,14 @@ The various scripts illustrate the use of the library:
 LUD is the Linear Upwind Differencing scheme. It has significantly less dissipation than the regular upwind scheme.
 It is used to discretize, in space, the following advection-type operator:
 
-$$ a \frac{\partial u} \{partial x} $$ 
+$$ a \frac{\partial u} {\partial x} $$ 
 
 $a$ does not have to be a constant: it can actually be $a(u,t)$.
 
 # Diffusion
 central difference scheme is used to discretize, in space, the following diffusion-type operator:
 
-$$ nu \frac{\partial^2 u} \{partial x^2} $$ 
+$$ nu \frac{\partial^2 u} {\partial x^2} $$ 
 
 ## Computing the gradient of the cost functional
 

@@ -54,14 +54,14 @@ The various scripts illustrate the use of the library:
 LUD is the Linear Upwind Differencing scheme. It has significantly less dissipation than the regular upwind scheme.
 It is used to discretize, in space, the following advection-type operator:
 
-<p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/c7e3d5ffaf465de65574b33703fc7bbb.svg?invert_in_darkmode" align=middle width=91.17669pt height=37.863705pt/></p> 
+<p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/350014df326d63640dafa3e073a410be.svg?invert_in_darkmode" align=middle width=29.680035pt height=33.769395pt/></p> 
 
 <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/44bc9d542a92714cac84e01cbbb7fd61.svg?invert_in_darkmode" align=middle width=8.656725pt height=14.10255pt/> does not have to be a constant: it can actually be <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/6d32ab707a69e1b60bcb0d5cdbb2ddac.svg?invert_in_darkmode" align=middle width=43.972335pt height=24.56553pt/>.
 
 # Diffusion
 central difference scheme is used to discretize, in space, the following diffusion-type operator:
 
-<p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/4f0f5f27b2eef812e665951b5723c0d5.svg?invert_in_darkmode" align=middle width=115.62771pt height=39.844035pt/></p> 
+<p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/2a2582121c1c1f8ca35d7b479e2f4413.svg?invert_in_darkmode" align=middle width=47.60283pt height=35.749725pt/></p> 
 
 ## Computing the gradient of the cost functional
 
