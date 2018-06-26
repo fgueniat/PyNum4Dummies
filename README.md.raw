@@ -45,12 +45,12 @@ The various scripts illustrate the use of the library:
 * script_operators.py - general equation
 
 
-### Todo:
+# Todo:
 * advection: instabilities in LUD when too stiff ? Flux limiter ?
 
-### Explanations
+# Explanations
 ## Provided discretization schemes
-# Advection
+### Advection
 LUD is the Linear Upwind Differencing scheme. It has significantly less dissipation than the regular upwind scheme.
 It is used to discretize, in space, the following advection-type operator:
 
@@ -58,12 +58,12 @@ $$ a \frac{\partial u} {\partial x} $$
 
 $a$ does not have to be a constant: it can actually be $a(u,t)$.
 
-# Diffusion
+### Diffusion
 central difference scheme is used to discretize, in space, the following diffusion-type operator:
 
 $$ nu \frac{\partial^2 u} {\partial x^2} $$ 
 
-## Computing the gradient of the cost functional
+### Computing the gradient of the cost functional
 
 We want to look at the problem depending on some parameters:
 
@@ -77,11 +77,15 @@ $$
 F(u,\dot{u},q,t) = 0
 $$
 
+*The physics is solved using the function integration_forward*
+
 For instance, considering $q\equiv \{q_c,q_u\}$, and the Burgers' equation, we have
 
 $$
 F(u,\dot{u},q,t) := \frac{\partial u} {\partial t} + q_c u \frac{\partial u}{\partial x}  =0
 $$
+
+*$F$ will be constructed as a list of operators*
 
 If the cost function means fitting the model on available data $y(t)$, then, one have:
 
@@ -89,10 +93,13 @@ $$
 j(u,q,t) := |u(t) - y(t)|.
 $$
 
+
 We are also considering that the initial conditions are (potentially) related to the parameters q with:
 $$
 g(u(0),q) = 0
 $$
+
+*$j$ and $g$ do not have to be constructed. In practice, only their partial derivatives w.r.t. $u$ and $q$ will be needed.*
 
 For instance, if the initial conditions are actually the parameter $q_u$:
 
@@ -195,6 +202,7 @@ $$
 $$
 integrated backwards in time. 
 
+*This equation is solved using the function integration_backward*
 
 To do so, linearize $F$ around $u$ and replace $u$ 
 
@@ -211,4 +219,5 @@ $$
 		  +      \mu^T \partial_q g.
 $$
 
+*This equation is solved using the function gradient_q*
 

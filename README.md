@@ -45,12 +45,12 @@ The various scripts illustrate the use of the library:
 * script_operators.py - general equation
 
 
-### Todo:
+# Todo:
 * advection: instabilities in LUD when too stiff ? Flux limiter ?
 
-### Explanations
+# Explanations
 ## Provided discretization schemes
-# Advection
+### Advection
 LUD is the Linear Upwind Differencing scheme. It has significantly less dissipation than the regular upwind scheme.
 It is used to discretize, in space, the following advection-type operator:
 
@@ -58,12 +58,12 @@ It is used to discretize, in space, the following advection-type operator:
 
 <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/44bc9d542a92714cac84e01cbbb7fd61.svg?invert_in_darkmode" align=middle width=8.656725pt height=14.10255pt/> does not have to be a constant: it can actually be <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/6d32ab707a69e1b60bcb0d5cdbb2ddac.svg?invert_in_darkmode" align=middle width=43.972335pt height=24.56553pt/>.
 
-# Diffusion
+### Diffusion
 central difference scheme is used to discretize, in space, the following diffusion-type operator:
 
 <p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/2a2582121c1c1f8ca35d7b479e2f4413.svg?invert_in_darkmode" align=middle width=47.60283pt height=35.749725pt/></p> 
 
-## Computing the gradient of the cost functional
+### Computing the gradient of the cost functional
 
 We want to look at the problem depending on some parameters:
 
@@ -71,16 +71,23 @@ We want to look at the problem depending on some parameters:
 s.t. the physics:
 <p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/16283e6f9f4969cb2a841640a223eb9a.svg?invert_in_darkmode" align=middle width=110.076945pt height=16.376943pt/></p>
 
+*The physics is solved using the function integration_forward*
+
 For instance, considering <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/35e5cdaf66f3d610c421c0c18a4d656f.svg?invert_in_darkmode" align=middle width=83.34876pt height=24.56553pt/>, and the Burgers' equation, we have
 
 <p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/efede7cdc7c66e46783506cfef0a055a.svg?invert_in_darkmode" align=middle width=225.91305pt height=33.769395pt/></p>
+
+*<img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/b8bc815b5e9d5177af01fd4d3d3c2f10.svg?invert_in_darkmode" align=middle width=12.80598pt height=22.38192pt/> will be constructed as a list of operators*
 
 If the cost function means fitting the model on available data <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/d4378ba898213096600125929214f90a.svg?invert_in_darkmode" align=middle width=27.270705pt height=24.56553pt/>, then, one have:
 
 <p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/eeb1823bd9e58f2bb948adf7ae7eec3f.svg?invert_in_darkmode" align=middle width=173.59815pt height=16.376943pt/></p>
 
+
 We are also considering that the initial conditions are (potentially) related to the parameters q with:
 <p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/6b1545e49da27eecc71689bc4caec24e.svg?invert_in_darkmode" align=middle width=96.687855pt height=16.376943pt/></p>
+
+*<img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/36b5afebdba34564d884d347484ac0c7.svg?invert_in_darkmode" align=middle width=7.6816575pt height=21.60213pt/> and <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/3cf4fbd05970446973fc3d9fa3fe3c41.svg?invert_in_darkmode" align=middle width=8.398995pt height=14.10255pt/> do not have to be constructed. In practice, only their partial derivatives w.r.t. <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/6dbb78540bd76da3f1625782d42d6d16.svg?invert_in_darkmode" align=middle width=9.375135pt height=14.10255pt/> and <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/d5c18a8ca1894fd3a7d25f242cbe8890.svg?invert_in_darkmode" align=middle width=7.8985335pt height=14.10255pt/> will be needed.*
 
 For instance, if the initial conditions are actually the parameter <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/db690fdb4ebf32ef3722ac5b7d64d136.svg?invert_in_darkmode" align=middle width=15.054105pt height=14.10255pt/>:
 
@@ -129,6 +136,7 @@ The choice of <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/54
 <p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/16cd4b56c6e04130965b7a0b2f11f729.svg?invert_in_darkmode" align=middle width=333.12345pt height=39.30498pt/></p>
 integrated backwards in time. 
 
+*This equation is solved using the function integration_backward*
 
 To do so, linearize <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/b8bc815b5e9d5177af01fd4d3d3c2f10.svg?invert_in_darkmode" align=middle width=12.80598pt height=22.38192pt/> around <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/6dbb78540bd76da3f1625782d42d6d16.svg?invert_in_darkmode" align=middle width=9.375135pt height=14.10255pt/> and replace <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/6dbb78540bd76da3f1625782d42d6d16.svg?invert_in_darkmode" align=middle width=9.375135pt height=14.10255pt/> 
 
@@ -141,4 +149,5 @@ Then, computing <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/
 
 <p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/ada9d358292a2ddd134f8456fade4925.svg?invert_in_darkmode" align=middle width=325.57965pt height=41.616135pt/></p>
 
+*This equation is solved using the function gradient_q*
 

@@ -109,7 +109,7 @@ lambdas_s = []
 ##################################################
 ##################################################
 
-for i_adjoint in range(150):
+for i_adjoint in range(25):
     if i_adjoint>1:
         if np.linalg.norm(DJ)<1.e-6:
             print('gradient is small: break')
