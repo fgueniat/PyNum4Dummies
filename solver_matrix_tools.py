@@ -1,4 +1,5 @@
 import numpy as np
+from operators_matrix_tools import *
 '''
 library for solving burgers and easy 1d pde.
 contains 
@@ -10,6 +11,9 @@ space derivative:
 second space derivative
     central_scheme
 cfl (compute and print the cfl number)
+
+Some operators already discretized are imported from operators_matrix_tools.
+
 '''
 
 param_n_ghost = 16

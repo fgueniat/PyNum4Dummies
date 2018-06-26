@@ -12,7 +12,7 @@ import matplotlib.animation as animation
 ##################################################
 # Data Assimilation objective:
 objectives = ['CI and MODEL','MODEL','CI']
-objective = objectives[0]
+objective = objectives[2]
 
 # integration
 method = 'RK4'
@@ -23,9 +23,9 @@ if objective == 'CI':
 else:
     q_physics= [7.2 , 0.35]
 #
-q_target = [6.5,  0.45]
+q_data = [6.5,  0.45]
 c_0,nu = q_physics[0],q_physics[1]
-c_target,nu_target = q_target[0],q_target[1]
+c_data,nu_data = q_data[0],q_data[1]
 
 #space
 n_x = 100
@@ -45,16 +45,15 @@ u0_init  = np.exp(- (x-mu_offset)**2 / (2. * s_dev2) ) / np.sqrt(2. * np.pi * s_
 u0_init += u_background
 
 
-
-# Target Conditions
+# Data
 if objective == 'CI' or objective == 'CI and MODEL':
-    s_dev2_target, mu_offset_target = .2, 1.
-    u_background_target = 0.
-    u_target  = np.exp(- (x-mu_offset_target)**2 / (2. * s_dev2_target) ) / np.sqrt(2. * np.pi * s_dev2_target)
-    u_target += u_background_target
-else:
-    u_target = u0_init.copy()
-#u_target = u0
+    s_dev2_data, mu_offset_data = .2, 1.
+    u_background_data = 0.
+    u_data  = np.exp(- (x-mu_offset_data)**2 / (2. * s_dev2_data) ) / np.sqrt(2. * np.pi * s_dev2_data)
+    u_data += u_background_data
+    #u_data = np.sin(2.*np.pi*x) #for an harder problem
+else: # if CI are similar
+    u_data = u0_init.copy()
 
 # Boundary conditions
 bc_type = 'periodic'
@@ -77,59 +76,6 @@ verbose = False
 
 
 
-def operator_advection(u,x,t,dt,p=c_target):
-    '''
-    this operator O is the RHS part of the advection term:
-    O(u,x,t) = c du/dx
-    It uses the LUD function from solver_tools
-    '''
-    return  st.LUD_mat(-p,u,x)
-
-def operator_advection_adjoint(lambda_,u,x,t,dt,p=c_target):
-    '''
-    this adjoint operator O is the RHS part of the advection term:
-    O(lambda,u,x,t) = -c dlambda/dx
-    It uses the LUD function from solver_tools
-    minus sign comes from the adjoint (cancelled by -dlambda/dt)
-    '''
-    return  -st.LUD_mat(p,lambda_,x)
-
-
-def operator_NL_advection(u,x,t,dt,p=1.):
-    '''
-    this operator O is the RHS part of the advection term:
-    O(u,x,t) = -u du/dx
-    It uses the LUD function from solver_tools
-    '''
-    return  st.LUD_mat(-p*u,u,x)
-
-def operator_NL_advection_adjoint(lambda_,u,x,t,dt,p=1.):
-    '''
-    this adjoint operator O is the RHS part of the advection term:
-    O(lambda,u,x,t) = u dlambda /dx
-    It uses the LUD function from solver_tools
-    minus sign comes from the adjoint (cancelled by -dlambda/dt)
-    '''
-    return  st.LUD_mat(-p*u,lambda_,x)
-
-
-
-def operator_diffusion(u,x,t,dt,p=nu_target):
-    '''
-    this operator O is the RHS part of the advection term:
-    O(u,x,t) = d^2u/dx^2
-    It uses the diffusion_mat function from solver_tools
-    '''
-    return  p*st.diffusion_mat(u,x)
-
-def operator_diffusion_adjoint(lambda_,u,x,t,dt,p=nu_target):
-    '''
-    this adjoint operator O is the RHS part of the advection term:
-    O(lambda,u,x,t) = d^2lambda/dx^2
-    It uses the diffusion_mat function from solver_tools
-    minus sign as (-dx)^2 = dx^2, but -dlambda/dt
-    '''
-    return  p*st.diffusion_mat(lambda_,x)
 
 def rhs(u,x,t,dt):
     return np.zeros(u.size)
@@ -142,7 +88,6 @@ def rhs_adjoint(lambda_,u,x,t,dt,p):
     #return np.zeros(lambda_.size)
     return 2. * (u-p)
 
-
 if objective == 'MODEL':
     n_q = 2
     q = q_physics
@@ -154,30 +99,24 @@ if objective == 'CI and MODEL':
     q = np.r_[u0_init,q_physics]
 
 DJ = np.zeros(n_q)
-dstore = []
-ustore = []
+gradients = []
+u0s = []
 lambdas_s = []
 
 
 
 
-
-'''
-
-
-pd = pt.Paradraw(colors=['k','g','r','c'],thickness = [3,3,3,3,3,3],legend=['$u_0$','$u_{obj}$','$u_{0,i}$','$\lambda$'])
-
-i=0
-
-pt.multiplot1((u0_init,u_target,ustore[i],lambdas_s[i]),pd)
-
-
-
-'''
-
 for i_adjoint in range(50):
+    if i_adjoint>1:
+        if np.linalg.norm(DJ)<1.e-6:
+            print('gradient is small: break')
+            break
+    if i_adjoint>2:
+        if np.linalg.norm(gradients[-1] - gradients[-2]) < 1.e-5:
+            print('gradient update is small: break')
+            break
     # update model:
-    q= q + 1.5*DJ
+    q= q + 1.*DJ
     if objective == 'CI':
         c_0,nu = q_physics[0],q_physics[1]
     else:
@@ -190,27 +129,35 @@ for i_adjoint in range(50):
     #
     lambda0 = np.zeros(n_x)
     #
-    #  Construction of the operators:
-    operator_advection_it = lambda u,x,t,dt: operator_advection(u,x,t,dt,p=c_0)
-    operator_NL_advection_it = lambda u,x,t,dt: operator_NL_advection(u,x,t,dt,p=1.)
-    operator_diffusion_it = lambda u,x,t,dt: operator_diffusion(u,x,t,dt,p=nu)    
+    #######
+    #  Construction of individual operators:
+    operator_advection              = lambda u,x,t,dt: st.operator_advection(u,x,t,dt,p=c_0)
+    operator_NL_advection           = lambda u,x,t,dt: st.operator_NL_advection(u,x,t,dt,p=1.)
+    operator_diffusion              = lambda u,x,t,dt: st.operator_diffusion(u,x,t,dt,p=nu)    
+    operator_advection_data         = lambda u,x,t,dt: st.operator_advection(u,x,t,dt,p=c_data)
+    operator_NL_advection_data      = lambda u,x,t,dt: st.operator_NL_advection(u,x,t,dt,p=1.)
+    operator_diffusion_data         = lambda u,x,t,dt: st.operator_diffusion(u,x,t,dt,p=nu_data)    
+    operator_advection_adjoint      = lambda lambda_,u,x,t,dt: st.operator_advection_adjoint(lambda_,u,x,t,dt,p=c_0)
+    operator_NL_advection_adjoint   = lambda lambda_,u,x,t,dt: st.operator_NL_advection_adjoint(lambda_,u,x,t,dt,p=1.)
+    operator_diffusion_adjoint      = lambda lambda_,u,x,t,dt: st.operator_diffusion_adjoint(lambda_,u,x,t,dt,p=nu)  
+     
+    #
+    ########
     #  Construction of the operators:
     operators = [
-                    operator_advection_it,
-                    #operator_NL_advection_it,
-                    operator_diffusion_it,
+                    operator_advection,
+                    #operator_NL_advection,
+                    operator_diffusion,
                 ]
     #
-    #  Construction of the operators:
-    operator_advection_data = lambda u,x,t,dt: operator_advection(u,x,t,dt,p=c_target)
-    operator_NL_advection_data = lambda u,x,t,dt: operator_NL_advection(u,x,t,dt,p=1.)
-    operator_diffusion_data = lambda u,x,t,dt: operator_diffusion(u,x,t,dt,p=nu_target)
+
     # 
     operators_data = [
                     operator_advection_data,
                     #operator_NL_advection_data,
                     operator_diffusion_data,
                 ]
+    #
     #
     operators_adjoint = [
                     operator_advection_adjoint,
@@ -243,9 +190,9 @@ for i_adjoint in range(50):
     #
     #
     if i_adjoint<1:
-        U_target,t_sampled_target = [],[]
+        U_data,t_sampled_data = [],[]
         n_save = 1
-        u = u_target.copy()
+        u = u_data.copy()
         # Loop
         for i_t in xrange(n_it):
             u = st.integration(u,x,time[i_t],dt,operators_data,method=method,bc_type = bc_type, bcs = bcs,return_rhs = False)
@@ -256,8 +203,8 @@ for i_adjoint in range(50):
                 #
             #
             if i_t%n_save == 0:#save only one solution every n_save 
-                U_target.append(u.copy())
-                t_sampled_target.append(time[i_t])
+                U_data.append(u.copy())
+                t_sampled_data.append(time[i_t])
             #
         #
     #
@@ -266,7 +213,6 @@ for i_adjoint in range(50):
     # Compute the gradient
     ##################################################
     ##################################################
-    #lambda0 = U[-1].copy()
     #
     # lambda
     if 1:
@@ -275,7 +221,7 @@ for i_adjoint in range(50):
         lambda_ = lambda0.copy()
         # Loop
         for i_t in xrange(n_it-1,-1,-1):
-            lambda_ = st.integration_backward_mat(lambda_,U[i_t],x,time[i_t],-dt,U_target[i_t],operators=operators_adjoint,rhs_forcing = rhs_adjoint,method=method,bc_type = bc_type, bcs = bcs,return_rhs = False)
+            lambda_ = st.integration_backward_mat(lambda_,U[i_t],x,time[i_t],-dt,U_data[i_t],operators=operators_adjoint,rhs_forcing = rhs_adjoint,method=method,bc_type = bc_type, bcs = bcs,return_rhs = False)
             if verbose is True:
                 if i_t%int(n_it/10.) == 0:
                     s = 'computations adjoint:' + '%.0f' % (10.*i_t/int(n_it/10)) + '%'
@@ -352,7 +298,7 @@ for i_adjoint in range(50):
         #
         dqg = [( lambda i: lambda u,q: ci_dqg(u,q,i) )(i) for i in range(n_q)]
     #
-    DJ = st.gradient(u0,U,lambdas,U_target,x,time,q,dqj,dqf,dqg,mu)
+    DJ = st.gradient(u0,U,lambdas,U_data,x,time,q,dqj,dqf,dqg,mu)
     #
     s = '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
     print(s)
@@ -362,9 +308,9 @@ for i_adjoint in range(50):
     if (objective=='CI') is False:
         s  = 'targets are:        '
         s += ' c: '
-        s += '%.2f' % q_target[0]
+        s += '%.2f' % q_data[0]
         s += ' nu: '
-        s += '%.2f' % q_target[1]
+        s += '%.2f' % q_data[1]
         print(s)
         s  = 'initial guesses are:'
         s += ' c: '
@@ -378,20 +324,18 @@ for i_adjoint in range(50):
         print(s)
     if  (objective=='MODEL') is False:
         s  = 'ecart CI: '
-        s += '%.4f' % (np.linalg.norm(u0 + DJ[:n_x] - u_target))
+        s += '%.4f' % (np.linalg.norm(u0 + DJ[:n_x] - u_data))
         print(s)
     #############################################################
     ############################################################
     # save
     #
-    ustore.append(u0.copy())
+    u0s.append(u0.copy())
     lambdas_s.append(lambdas[0].copy())
-    dstore.append(DJ)
+    gradients.append(DJ)
     #
 #
 #
-dstore = np.array(dstore)
-dstore = dstore[1:]
 ##################################################
 ##################################################
 # Plot the solution
@@ -462,7 +406,7 @@ if 0:
 ##################################################
 #
 #
-if 1:
+if 0:
     def update_line(num, lambdas, U,V,x,line1,line2,line3,verbose = True):
         '''
         update the plot
@@ -487,7 +431,7 @@ if 1:
     #
     plt.ion()
     #
-    line_ani = animation.FuncAnimation(fig3, update_line, xrange(ind_plot_start,ind_plot_end,n_plot_skip), fargs=(lambdas,U,U_target,x,line21,line22,line23),
+    line_ani = animation.FuncAnimation(fig3, update_line, xrange(ind_plot_start,ind_plot_end,n_plot_skip), fargs=(lambdas,U,U_data,x,line21,line22,line23),
                                        interval=100, blit=True)
     #
     #
@@ -499,22 +443,12 @@ if 0:
     pt.closeall()
     pt.multiplot2(
         (x,x,x,x),
-        (U[0],U_target[0],lambdas[-1], (-U[0] + U_target[0])*2.),
+        (U[0],U_data[0],lambdas[-1], (-U[0] + U_data[0])*2.),
         pt.Paradraw(colors = ['k','r','k','g'],
             marks = ['-','-','--','--'],
             thickness = [3,3,3,2],
             legend = ['u','y','$\lambda$','y-u'],
             )
         )
-
-
-if 0:
-    pd = pt.Paradraw(
-            y_scale = 'log')
-    pt.multiplot1((np.abs(dstore[:,0]),np.abs(dstore[:,1])),pd)
-
-if 0:
-    pd = pt.Paradraw()
-    pt.multiplot1((dstore[:,0],dstore[:,1]),pd)
 
 
