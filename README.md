@@ -28,11 +28,15 @@ It contains:
   * second space derivative <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/cb5f9f5c88b90ad2366ca70548b60f8d.svg?invert_in_darkmode" align=middle width=107.509545pt height=33.42009pt/>
     - central_scheme
 * cfl (compute and print the cfl number)
+* functions to compute the adjoint of the pdes in order to compute gradient of possibly complex costs functions
+  - data assimilation (identify initial conditions that allows to fit the model on the data available)
+  - model assimilation (identify model parameters that allows to fit the model on the data available)
 
 Other functions will be implemented, to derive reduced order models (ROM) of the equation, as well as computing the adjoint variables (see later).
 
 ### The scripts
 The various scripts illustrate the use of the library:
+* script_assimilation.py - data assimilation (model and/or CI)
 * script_advection.py - advection equation
 * script_test_accuracy.py - test the accuracy of the solver
 * script_unsteady_bc.py - illlustrates unsteady boundary conditions
