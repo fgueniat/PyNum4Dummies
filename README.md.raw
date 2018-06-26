@@ -47,7 +47,6 @@ The various scripts illustrate the use of the library:
 
 ## Todo:
 * advection: instabilities in LUD when too stiff ? Flux limiter ?
-* adjoint.
 
 
 
