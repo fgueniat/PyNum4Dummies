@@ -8,7 +8,6 @@ library that contains a few useful, already discretized operators and their adjo
 
 '''
 
-
 def operator_advection(u,x,t,dt,p=1):
     '''
     this operator O is the RHS part of the advection term:
@@ -25,6 +24,7 @@ def operator_advection_adjoint(lambda_,u,x,t,dt,p=1):
     minus sign comes from the adjoint (cancelled by -dlambda/dt)
     '''
     return  -st.LUD_mat(p,lambda_,x)
+
 
 def operator_NL_advection(u,x,t,dt,p=1.):
     '''

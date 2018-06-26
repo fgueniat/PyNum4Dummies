@@ -45,12 +45,25 @@ The various scripts illustrate the use of the library:
 * script_operators.py - general equation
 
 
-## Todo:
+### Todo:
 * advection: instabilities in LUD when too stiff ? Flux limiter ?
 
+### Explanations
+## Provided discretization schemes
+# Advection
+LUD is the Linear Upwind Differencing scheme. It has significantly less dissipation than the regular upwind scheme.
+It is used to discretize, in space, the following advection-type operator:
 
+$$ a \frac{\partial u} \{partial x} $$ 
 
-# Computing the gradient of the cost functional
+$a$ does not have to be a constant: it can actually be $a(u,t)$.
+
+# Diffusion
+central difference scheme is used to discretize, in space, the following diffusion-type operator:
+
+$$ nu \frac{\partial^2 u} \{partial x^2} $$ 
+
+## Computing the gradient of the cost functional
 
 We want to look at the problem depending on some parameters:
 
@@ -81,13 +94,11 @@ $$
 g(u(0),q) = 0
 $$
 
-
 For instance, if the initial conditions are actually the parameter $q_u$:
 
 $$ 
 	g(u(0),q) := u(0) - q_u =0.
 $$
-
 
 We want to find the argmin of J.
 This formalism is usefull in numerous situations, e.g.:
@@ -183,6 +194,10 @@ $$
 			=  0,
 $$
 integrated backwards in time. 
+
+
+To do so, linearize $F$ around $u$ and replace $u$ 
+
 
 Finally, the Lagrange parameter $ \mu $ is set so that it nullifies the component associated with $\partial_q u(0)$:
 

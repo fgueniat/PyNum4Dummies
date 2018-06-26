@@ -18,7 +18,6 @@ Some operators already discretized are imported from operators_matrix_tools.
 
 param_n_ghost = 16
 
-
 def LUD_mat(a,u,x):
     '''
     discretization of $ a \frac{\partial u} \{partial x} $ 
@@ -53,38 +52,6 @@ def LUD_mat(a,u,x):
     A += - np.diag( am[:-2] * v[:-2]/(2.* dx[:-2] ), 2 )
     return -A
 
-
-
-def upwind(a,u,x):
-    '''
-    discretization of $ a \frac{\partial u} \{partial x} $ 
-    upwind scheme
-    the minus signs come from it is treated as a RHS rather than a LHS
-    a is the term in front of the spatial derivative (it can be a function of x or u)
-    u is the quantity to be discretized
-    x is the space
-    '''
-    if np.isscalar(a):
-        ap = np.ones(u.shape) * np.maximum(-a,0)
-        am = np.ones(u.shape) * np.minimum(-a,0)
-    else:
-        ap = np.maximum(-a,0)
-        am = np.minimum(-a,0)
-    dudx = np.zeros(u.shape)
-    dudx[1:-1] = ap[1:-1]*(u[1:-1] - u[0:-2])/(x[1:-1] - x[0:-2]) + am[1:-1]*(u[2:] - u[1:-1]) / (x[2:] - x[1:-1])
-    return -dudx
-
-def central_scheme(u,x):
-    '''
-    discretization of $ \frac{\partial^2 u} \{partial x^2} $ 
-    central difference scheme scheme
-    u is the quantity to be discretized
-    x is the space
-    '''
-    d2udx2 = np.zeros(u.shape)
-    d2udx2[1:-1] = ( u[2:] + u[:-2] - 2.* u[1:-1]) / (2.* ( ( x[2:]-x[:-2] )/2. ) **2. )
-    return d2udx2
-
 def diffusion_mat(u,x):
     '''
     discretization of $ \frac{\partial^2 u} \{partial x^2} $ 
@@ -104,7 +71,6 @@ def diffusion_mat(u,x):
     #ui+1
     A += np.diag(v[1:], 1) 
     return A
-
 
 def cfl(u,x,dt):
     '''
@@ -161,7 +127,6 @@ def deghost(u,x,n_g=param_n_ghost):
     x = x[n_g:-n_g]
     return u,x
 
-
 def RHS(u,x,t,dt,operators = None ):
     '''
     add all the terms coming from the operators.
@@ -198,9 +163,6 @@ def RHS_mat(u,x,t,dt,operators = None ):
         A += operator(u,x,t,dt)
     return A
 
-
-
-
 def RHS_mat_adjoint(lambda_,u,x,t,dt,operators = None ):
     '''
     add all the terms coming from the operators.
@@ -220,15 +182,11 @@ def RHS_mat_adjoint(lambda_,u,x,t,dt,operators = None ):
     return A
 
 
-
-
 def integration(u, x, t, dt, operators = None, method = 'RK4', bc_type = 'periodic', bcs = None, n_g = param_n_ghost, return_rhs = False, Full_Operator = None, return_operator = False):
     '''
     bind to integration_forward_mat
     '''
     return integration_forward_mat(u,x,t,dt, operators = operators, method = method, bc_type = bc_type, bcs = bcs,n_g = n_g, return_rhs = return_rhs, Full_Operator = Full_Operator, return_operator = return_operator)
-
-
 
 def integration_forward_mat(u, x, t, dt, operators = None, rhs_forcing = None, method = 'RK4', bc_type = 'periodic', bcs = None, n_g = param_n_ghost, return_rhs = False,Full_Operator=None, return_operator = False):
     '''
@@ -289,7 +247,6 @@ def integration_forward_mat(u, x, t, dt, operators = None, rhs_forcing = None, m
     #
     return u
 
-
 def RK4(f,x,t,dt,p=None):
     if p is None: ff = lambda x,t,p: f(x,t)
     else: ff = lambda x,t,p: f(x,t,p)
@@ -298,7 +255,6 @@ def RK4(f,x,t,dt,p=None):
     k3 = dt * ff(x+k2/2.,t+dt/2.,p)
     k4 = dt * ff(x+k3,t+dt,p)
     return  (k1 + 2.*k2 + 2.*k3 + k4)/6.
-
 
 def integration_backward_mat(lambda_,u, x, t, dt, p, operators = None, rhs_forcing = None, method = 'RK4', bc_type = 'periodic', bcs = None, n_g = param_n_ghost, return_rhs = False,Full_Operator=None, return_operator = False):
     '''
@@ -370,12 +326,13 @@ def integration_backward_mat(lambda_,u, x, t, dt, p, operators = None, rhs_forci
 def lambda2mu(lambda0,dug, dupF):
     '''
     relationship between lambda and mu:
-    $( \mu^t \partial_g - lambda^T\partial_{\dot{u}}F)\\big|0 = 0 $
+    $( \mu^t \partial_u g - lambda^T\partial_{\dot{u}}F)\\big|0 = 0 $
     To be done.
+    Usually, \partial_{\dot{u}}F = 1, and \partial_u g = 1, hence mu = lambda(t=0)
     '''
     pass
 
-def gradient(u0,U,lambdas,data,x,time,q,dqj,dqf,dqg,mu) :
+def gradient_q(u0,U,lambdas,data,x,time,q,dqj,dqf,dqg,mu) :
     '''
     Final integration for the gradient:
     $ D_q = \int_0-^T \partial_q j  + \lambda^T \partial_q F dt + \mu^T \partial_q g $

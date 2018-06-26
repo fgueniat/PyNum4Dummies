@@ -12,7 +12,7 @@ import matplotlib.animation as animation
 ##################################################
 # Data Assimilation objective:
 objectives = ['CI and MODEL','MODEL','CI']
-objective = objectives[2]
+objective = objectives[0]
 
 # integration
 method = 'RK4'
@@ -39,7 +39,7 @@ n_it = int(tmax/dt)
 time = t0 + dt*np.arange(n_it)
 
 # Initial Conditions
-s_dev2, mu_offset = .2, -1.
+s_dev2, mu_offset = .3, -1.
 u_background = 0.
 u0_init  = np.exp(- (x-mu_offset)**2 / (2. * s_dev2) ) / np.sqrt(2. * np.pi * s_dev2)
 u0_init += u_background
@@ -55,6 +55,17 @@ if objective == 'CI' or objective == 'CI and MODEL':
 else: # if CI are similar
     u_data = u0_init.copy()
 
+# parameters
+if objective == 'MODEL':
+    n_q = 2
+    q = q_physics
+if objective == 'CI':
+    n_q = n_x
+    q = u0_init
+if objective == 'CI and MODEL':
+    n_q = n_x + 2
+    q = np.r_[u0_init,q_physics]
+
 # Boundary conditions
 bc_type = 'periodic'
 bcs = None
@@ -67,14 +78,9 @@ verbose = False
 
 ##################################################
 ##################################################
-# define the advection equation:
+# define the equation:
 ##################################################
 ##################################################
-
-# inviscid: du/dt = - c_0 du/dx
-
-
-
 
 
 def rhs(u,x,t,dt):
@@ -86,27 +92,24 @@ def rhs_adjoint(lambda_,u,x,t,dt,p):
     O(lambda,u,x,t,p) = dj/du
     '''
     #return np.zeros(lambda_.size)
-    return 2. * (u-p)
+    return 2. * (u-p) # j = ||u-y|| ^2
 
-if objective == 'MODEL':
-    n_q = 2
-    q = q_physics
-if objective == 'CI':
-    n_q = n_x
-    q = u0_init
-if objective == 'CI and MODEL':
-    n_q = n_x + 2
-    q = np.r_[u0_init,q_physics]
 
+
+
+# storages
 DJ = np.zeros(n_q)
 gradients = []
 u0s = []
 lambdas_s = []
 
+##################################################
+##################################################
+# Computations:
+##################################################
+##################################################
 
-
-
-for i_adjoint in range(50):
+for i_adjoint in range(150):
     if i_adjoint>1:
         if np.linalg.norm(DJ)<1.e-6:
             print('gradient is small: break')
@@ -150,7 +153,6 @@ for i_adjoint in range(50):
                     operator_diffusion,
                 ]
     #
-
     # 
     operators_data = [
                     operator_advection_data,
@@ -164,6 +166,7 @@ for i_adjoint in range(50):
                     #operator_NL_advection_adjoint,
                     operator_diffusion_adjoint,
                 ]
+    #
     #
     ##################################################
     ##################################################
@@ -189,7 +192,7 @@ for i_adjoint in range(50):
         #
     #
     #
-    if i_adjoint<1:
+    if i_adjoint<1: # data computed only one time
         U_data,t_sampled_data = [],[]
         n_save = 1
         u = u_data.copy()
@@ -233,17 +236,18 @@ for i_adjoint in range(50):
             #
         #
     #
-    #
+    # integration was backward: reordering terms
     lambdas = lambdas[::-1]
     #
-    #mu
+    # mu    
+    #relationship between lambda and mu:
+    #$( \mu^t \partial_u g - lambda^T\partial_{\dot{u}}F)\\big|0 = 0 $
+    #
     mu = lambdas[0].copy() 
     #
-    #################################################################################
-    #################################################################################
-    #
-    # final integration
-    # a few def:
+    # final integration to compute the gradient
+    ############# TODO :: PUT EVERYTHING HERE IN operators_matrix_tools !! ####################
+    # a few definitions:
     # dqj:
     null_dqj = lambda u,d,x,t,q: 0.
     # dqf
@@ -274,32 +278,24 @@ for i_adjoint in range(50):
     #
     #
     if objective == 'MODEL':
-        #
         dqj = [null_dqj for i in range(n_q)]
-        #
         dqf = [dqf_c,dqf_nu]
-        #
         dqg = [null_dqg for i in range(n_q)]
-        #
+    #
     if objective == 'CI':
-        #
         dqj = [null_dqj for i in range(n_q)]
-        #
         dqf = [null_dqf for i in range(n_q)] 
-        #
         dqg = [( lambda i: lambda u,q: ci_dqg(u,q,i) )(i) for i in range(n_q)]
-        #
+    #
     if objective == 'CI and MODEL':
-        #
-        null_dqj = lambda u,d,x,t,q: 0. # model
         dqj = [null_dqj for i in range(n_q)]
-        #
         dqf = [null_dqf for i in range(n_x)] + [dqf_c,dqf_nu]
-        #
         dqg = [( lambda i: lambda u,q: ci_dqg(u,q,i) )(i) for i in range(n_q)]
     #
-    DJ = st.gradient(u0,U,lambdas,U_data,x,time,q,dqj,dqf,dqg,mu)
+    DJ = st.gradient_q(u0,U,lambdas,U_data,x,time,q,dqj,dqf,dqg,mu)
     #
+    ########################################################
+    ################### PRINTS #############################
     s = '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
     print(s)
     s  = 'iteration : ' + str(i_adjoint)

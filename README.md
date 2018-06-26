@@ -45,12 +45,25 @@ The various scripts illustrate the use of the library:
 * script_operators.py - general equation
 
 
-## Todo:
+### Todo:
 * advection: instabilities in LUD when too stiff ? Flux limiter ?
 
+### Explanations
+## Provided discretization schemes
+# Advection
+LUD is the Linear Upwind Differencing scheme. It has significantly less dissipation than the regular upwind scheme.
+It is used to discretize, in space, the following advection-type operator:
 
+<p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/c7e3d5ffaf465de65574b33703fc7bbb.svg?invert_in_darkmode" align=middle width=91.17669pt height=37.863705pt/></p> 
 
-# Computing the gradient of the cost functional
+<img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/44bc9d542a92714cac84e01cbbb7fd61.svg?invert_in_darkmode" align=middle width=8.656725pt height=14.10255pt/> does not have to be a constant: it can actually be <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/6d32ab707a69e1b60bcb0d5cdbb2ddac.svg?invert_in_darkmode" align=middle width=43.972335pt height=24.56553pt/>.
+
+# Diffusion
+central difference scheme is used to discretize, in space, the following diffusion-type operator:
+
+<p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/4f0f5f27b2eef812e665951b5723c0d5.svg?invert_in_darkmode" align=middle width=115.62771pt height=39.844035pt/></p> 
+
+## Computing the gradient of the cost functional
 
 We want to look at the problem depending on some parameters:
 
@@ -69,11 +82,9 @@ If the cost function means fitting the model on available data <img src="https:/
 We are also considering that the initial conditions are (potentially) related to the parameters q with:
 <p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/6b1545e49da27eecc71689bc4caec24e.svg?invert_in_darkmode" align=middle width=96.687855pt height=16.376943pt/></p>
 
-
 For instance, if the initial conditions are actually the parameter <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/db690fdb4ebf32ef3722ac5b7d64d136.svg?invert_in_darkmode" align=middle width=15.054105pt height=14.10255pt/>:
 
 <p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/2b76a93e1a4ea33f591cbc61e9da7cfd.svg?invert_in_darkmode" align=middle width=193.90635pt height=16.376943pt/></p>
-
 
 We want to find the argmin of J.
 This formalism is usefull in numerous situations, e.g.:
@@ -117,6 +128,10 @@ The choice of <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/54
 
 <p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/16cd4b56c6e04130965b7a0b2f11f729.svg?invert_in_darkmode" align=middle width=333.12345pt height=39.30498pt/></p>
 integrated backwards in time. 
+
+
+To do so, linearize <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/b8bc815b5e9d5177af01fd4d3d3c2f10.svg?invert_in_darkmode" align=middle width=12.80598pt height=22.38192pt/> around <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/6dbb78540bd76da3f1625782d42d6d16.svg?invert_in_darkmode" align=middle width=9.375135pt height=14.10255pt/> and replace <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/6dbb78540bd76da3f1625782d42d6d16.svg?invert_in_darkmode" align=middle width=9.375135pt height=14.10255pt/> 
+
 
 Finally, the Lagrange parameter <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/4d01d1168740312c9cbf4c58d10ac5f7.svg?invert_in_darkmode" align=middle width=9.86799pt height=14.10255pt/> is set so that it nullifies the component associated with <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/899d25373b79ec2a7e855b098bf9b9b8.svg?invert_in_darkmode" align=middle width=46.255605pt height=24.56553pt/>:
 
