@@ -362,3 +362,49 @@ def integration_backward_mat(lambda_,u, x, t, dt, p, operators = None, rhs_forci
     #
     return lambda_
 
+
+def lambda2mu(lambda0,dug, dupF):
+    '''
+    relationship between lambda and mu:
+    $( \mu^t \partial_g - lambda^T\partial_{\dot{u}}F)\\big|0 = 0 $
+    To be done.
+    '''
+    pass
+
+def gradient(u0,U,lambdas,data,x,time,q,dqj,dqf,dqg,mu) :
+    '''
+    Final integration for the gradient:
+    $ D_q = \int_0-^T \partial_q j  + \lambda^T \partial_q F dt + \mu^T \partial_q g $
+    
+    dqj: list of n_q functions that represent $\partial_q j$. Functions have to accept the arguments (U,data,x,(i_t,t),q)
+    dqf: list of n_q functions that represent $\partial_q F$. Functions have to accept the arguments (U,x,(i_t,t),q)
+    dqg: list of n_q functions that represent $\partial_q g$. Functions have to accept the arguments (u0,q)
+    mu can be computed by calling lambda2mu
+    '''
+    #
+    n_q = len(q)
+    #
+    DJ = np.zeros(n_q)
+    # part $\mu^T \partial_q g$
+    for i_q in range(n_q) :
+        dqg_i = dqg[i_q](u0,q)
+        DJ[i_q] += np.dot(mu.T,dqg_i)
+    #
+    # part $\int_0-^T \partial_q j  + \lambda^T \partial_q F dt$
+    for i_t,t in enumerate(time) :
+        if i_t == len(time)-1 :
+            dt = 0.5 * (time[-1] - time[-2])
+        elif i_t == 0 :
+            dt = 0.5 * (time[1] - time[0])
+        else :
+            dt = 0.5 * (time[i_t+1] - time[i_t-1])
+        #
+        for i_q in range(n_q) :
+            DJ[i_q] += dt * dqj[i_q]( U, data, x, (i_t,t), q )
+            DJ[i_q] += dt * np.dot( 
+                                lambdas[i_t].T , 
+                                dqf[i_q]( U, x, (i_t,t), q ) 
+                                )
+            #
+        #
+    return DJ

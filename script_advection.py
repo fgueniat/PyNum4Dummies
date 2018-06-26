@@ -17,7 +17,7 @@ method = 'RK4'
 # physics
 c_0 = 1.
 #space
-n_x = 200
+n_x = 150
 xmin,xmax = -5.,5.
 x = np.linspace(xmin,xmax,n_x)
 
