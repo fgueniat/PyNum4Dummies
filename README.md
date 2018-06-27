@@ -73,7 +73,7 @@ In the present approach, we chose to separate the time derivative operator from 
 <p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/f0bd8b387fe19e78c66b6a63a3164852.svg?invert_in_darkmode" align=middle width=245.256pt height=35.749725pt/></p>
 with <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/3aec98a126651a10d31427027226826d.svg?invert_in_darkmode" align=middle width=89.35014pt height=28.86675pt/> and <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/84481e6a2e7547617ef975ff490f37ba.svg?invert_in_darkmode" align=middle width=82.78941pt height=33.42009pt/>.
 
-> The list <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/1d1c652dbcc962aaf99125ab3d937a38.svg?invert_in_darkmode" align=middle width=53.427pt height=24.56553pt/> will be passed to `integration_forward`, in order to solve the pde.
+> The list of RHS operators <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/1d1c652dbcc962aaf99125ab3d937a38.svg?invert_in_darkmode" align=middle width=53.427pt height=24.56553pt/> will be passed to `integration_forward`, in order to solve the pde.
 
 
 ### Computing the gradient of the cost functional
