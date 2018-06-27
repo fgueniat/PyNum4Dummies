@@ -36,13 +36,13 @@ Other functions will be implemented, to derive reduced order models (ROM) of the
 
 ### The scripts
 The various scripts illustrate the use of the library:
-* script_assimilation.py - data assimilation (model and/or CI)
-* script_advection.py - advection equation
-* script_test_accuracy.py - test the accuracy of the solver
-* script_unsteady_bc.py - illlustrates unsteady boundary conditions
-* script_burgers_inviscid.py - inviscid burger equation
-* script_viscous_burgers.py - viscous burger equation
-* script_operators.py - general equation
+* `script_assimilation.py` - data assimilation (model and/or CI)
+* `script_advection.py` - advection equation
+* `script_test_accuracy.py` - test the accuracy of the solver
+* `script_unsteady_bc.py` - illlustrates unsteady boundary conditions
+* `script_burgers_inviscid.py` - inviscid burger equation
+* `script_viscous_burgers.py` - viscous burger equation
+* `script_operators.py` - general equation
 
 
 # Todo:
@@ -63,6 +63,9 @@ central difference scheme is used to discretize, in space, the following diffusi
 
 $$ nu \frac{\partial^2 u} {\partial x^2} $$ 
 
+### Solving a Partial Differential Equation
+> $F$ will be constructed as a list of operators.
+
 ### Computing the gradient of the cost functional
 
 We want to look at the problem depending on some parameters:
@@ -77,7 +80,7 @@ $$
 F(u,\dot{u},q,t) = 0
 $$
 
-*The physics is solved using the function integration_forward*
+> The physics is solved using the function `integration_forward`
 
 For instance, considering $q\equiv \{q_c,q_u\}$, and the Burgers' equation, we have
 
@@ -85,7 +88,6 @@ $$
 F(u,\dot{u},q,t) := \frac{\partial u} {\partial t} + q_c u \frac{\partial u}{\partial x}  =0
 $$
 
-*$F$ will be constructed as a list of operators*
 
 If the cost function means fitting the model on available data $y(t)$, then, one have:
 
@@ -99,7 +101,7 @@ $$
 g(u(0),q) = 0
 $$
 
-*$j$ and $g$ do not have to be constructed. In practice, only their partial derivatives w.r.t. $u$ and $q$ will be needed.*
+> $j$ and $g$ do not have to be constructed. In practice, only their partial derivatives w.r.t. $u$ and $q$ will be needed.
 
 For instance, if the initial conditions are actually the parameter $q_u$:
 
@@ -116,7 +118,7 @@ This formalism is usefull in numerous situations, e.g.:
 Identifying the minimum of the $J$ relies on the gradient of the functional with respect to the parameters:
 $D_q J = \frac{D\,J}{Dq}$. 
 
-Finite differentiation is out of reach if the size of q is large.
+Estimation of the gradient with finite differentiation is out of reach if the size of $q$ is large (if $n_q$ is the size of $q$, then $2 n_q$ evaluation of the system are needed).
 
 For that, one can introduce the Lagrangian $ L := L \bigg(u,\dot{u},q,\lambda,\mu\bigg)$, associated with the two Lagrange parameters $\lambda$ and $\mu$ (variables are dropped for visibility):
 
@@ -128,7 +130,6 @@ $$
 where $^T$ is the transpose operator. 
 Naturally, both $u$ and $\dot{u}$ are considered as variables.
 
-As $F$ and $g$ are null by construction, $\lambda$ and $\mu$ can be designed specifically to alleviate the computations.
 
 The gradient $D_q L = \frac{D L}{Dq}$ of $ L$ is
 $$
@@ -154,6 +155,7 @@ $$
 		   - \int_0^T \left\{\dot{   {\lambda}}^T\partial_{\dot{u}} F  \right. 
 		   \left. +    {\lambda}^T \partial_t \partial_{\dot{u}}F  \right\} \partial_q u {\textrm d}t.
 $$
+
 
 The term associated with $\partial_{ \dot{u} }$ can now be replaced.
 
@@ -186,7 +188,10 @@ $$
 		\right|_T \partial_q u(T)
 $$
 
-Proper choices for $ \lambda $ and $\mu$ allow to simplify the expression of $D_q L$.
+As $F$ and $g$ are null by construction, $\lambda$ and $\mu$ can be designed specifically to alleviate the computations.
+
+Indeed, proper choices for $ \lambda $ and $\mu$ allow to simplify the expression of $D_q L$.
+
 The choice of $ \lambda (T) =  0$ nullifies the term $\left.\bigg( \lambda^T \partial_{ \dot{u} } F  \bigg) \right|_T \partial_q u(T)$.
 $ \lambda $ can then be chosen as the solution of the so-called adjoint equation(see Ledimet 1986,Talagrand 1997):
 
@@ -202,7 +207,7 @@ $$
 $$
 integrated backwards in time. 
 
-*This equation is solved using the function integration_backward*
+> This equation is solved using the function `integration_backward`
 
 To do so, linearize $F$ around $u$ and replace $u$ 
 
@@ -219,5 +224,5 @@ $$
 		  +      \mu^T \partial_q g.
 $$
 
-*This equation is solved using the function gradient_q*
+> This equation is solved using the function `gradient_q`
 

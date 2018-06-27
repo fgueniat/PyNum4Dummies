@@ -36,13 +36,13 @@ Other functions will be implemented, to derive reduced order models (ROM) of the
 
 ### The scripts
 The various scripts illustrate the use of the library:
-* script_assimilation.py - data assimilation (model and/or CI)
-* script_advection.py - advection equation
-* script_test_accuracy.py - test the accuracy of the solver
-* script_unsteady_bc.py - illlustrates unsteady boundary conditions
-* script_burgers_inviscid.py - inviscid burger equation
-* script_viscous_burgers.py - viscous burger equation
-* script_operators.py - general equation
+* `script_assimilation.py` - data assimilation (model and/or CI)
+* `script_advection.py` - advection equation
+* `script_test_accuracy.py` - test the accuracy of the solver
+* `script_unsteady_bc.py` - illlustrates unsteady boundary conditions
+* `script_burgers_inviscid.py` - inviscid burger equation
+* `script_viscous_burgers.py` - viscous burger equation
+* `script_operators.py` - general equation
 
 
 # Todo:
@@ -63,6 +63,9 @@ central difference scheme is used to discretize, in space, the following diffusi
 
 <p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/2a2582121c1c1f8ca35d7b479e2f4413.svg?invert_in_darkmode" align=middle width=47.60283pt height=35.749725pt/></p> 
 
+### Solving a Partial Differential Equation
+> <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/b8bc815b5e9d5177af01fd4d3d3c2f10.svg?invert_in_darkmode" align=middle width=12.80598pt height=22.38192pt/> will be constructed as a list of operators.
+
 ### Computing the gradient of the cost functional
 
 We want to look at the problem depending on some parameters:
@@ -71,13 +74,12 @@ We want to look at the problem depending on some parameters:
 s.t. the physics:
 <p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/16283e6f9f4969cb2a841640a223eb9a.svg?invert_in_darkmode" align=middle width=110.076945pt height=16.376943pt/></p>
 
-*The physics is solved using the function integration_forward*
+> The physics is solved using the function `integration_forward`
 
 For instance, considering <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/35e5cdaf66f3d610c421c0c18a4d656f.svg?invert_in_darkmode" align=middle width=83.34876pt height=24.56553pt/>, and the Burgers' equation, we have
 
 <p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/efede7cdc7c66e46783506cfef0a055a.svg?invert_in_darkmode" align=middle width=225.91305pt height=33.769395pt/></p>
 
-*<img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/b8bc815b5e9d5177af01fd4d3d3c2f10.svg?invert_in_darkmode" align=middle width=12.80598pt height=22.38192pt/> will be constructed as a list of operators*
 
 If the cost function means fitting the model on available data <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/d4378ba898213096600125929214f90a.svg?invert_in_darkmode" align=middle width=27.270705pt height=24.56553pt/>, then, one have:
 
@@ -87,7 +89,7 @@ If the cost function means fitting the model on available data <img src="https:/
 We are also considering that the initial conditions are (potentially) related to the parameters q with:
 <p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/6b1545e49da27eecc71689bc4caec24e.svg?invert_in_darkmode" align=middle width=96.687855pt height=16.376943pt/></p>
 
-*<img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/36b5afebdba34564d884d347484ac0c7.svg?invert_in_darkmode" align=middle width=7.6816575pt height=21.60213pt/> and <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/3cf4fbd05970446973fc3d9fa3fe3c41.svg?invert_in_darkmode" align=middle width=8.398995pt height=14.10255pt/> do not have to be constructed. In practice, only their partial derivatives w.r.t. <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/6dbb78540bd76da3f1625782d42d6d16.svg?invert_in_darkmode" align=middle width=9.375135pt height=14.10255pt/> and <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/d5c18a8ca1894fd3a7d25f242cbe8890.svg?invert_in_darkmode" align=middle width=7.8985335pt height=14.10255pt/> will be needed.*
+> <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/36b5afebdba34564d884d347484ac0c7.svg?invert_in_darkmode" align=middle width=7.6816575pt height=21.60213pt/> and <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/3cf4fbd05970446973fc3d9fa3fe3c41.svg?invert_in_darkmode" align=middle width=8.398995pt height=14.10255pt/> do not have to be constructed. In practice, only their partial derivatives w.r.t. <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/6dbb78540bd76da3f1625782d42d6d16.svg?invert_in_darkmode" align=middle width=9.375135pt height=14.10255pt/> and <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/d5c18a8ca1894fd3a7d25f242cbe8890.svg?invert_in_darkmode" align=middle width=7.8985335pt height=14.10255pt/> will be needed.
 
 For instance, if the initial conditions are actually the parameter <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/db690fdb4ebf32ef3722ac5b7d64d136.svg?invert_in_darkmode" align=middle width=15.054105pt height=14.10255pt/>:
 
@@ -102,7 +104,7 @@ This formalism is usefull in numerous situations, e.g.:
 Identifying the minimum of the <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/8eb543f68dac24748e65e2e4c5fc968c.svg?invert_in_darkmode" align=middle width=10.65636pt height=22.38192pt/> relies on the gradient of the functional with respect to the parameters:
 <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/8b3f544e88b0a34f6b2c1dff52a7660e.svg?invert_in_darkmode" align=middle width=77.02893pt height=28.61199pt/>. 
 
-Finite differentiation is out of reach if the size of q is large.
+Estimation of the gradient with finite differentiation is out of reach if the size of <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/d5c18a8ca1894fd3a7d25f242cbe8890.svg?invert_in_darkmode" align=middle width=7.8985335pt height=14.10255pt/> is large (if <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/eee6665ce62bddc33409a908ab9ef854.svg?invert_in_darkmode" align=middle width=16.24392pt height=14.10255pt/> is the size of <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/d5c18a8ca1894fd3a7d25f242cbe8890.svg?invert_in_darkmode" align=middle width=7.8985335pt height=14.10255pt/>, then <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/8673258717c25292341c86b159af459b.svg?invert_in_darkmode" align=middle width=24.432375pt height=21.10812pt/> evaluation of the system are needed).
 
 For that, one can introduce the Lagrangian <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/d75a843ca0504df11e1e98882b538fe9.svg?invert_in_darkmode" align=middle width=148.128255pt height=47.66652pt/>, associated with the two Lagrange parameters <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/fd8be73b54f5436a5cd2e73ba9b6bfa9.svg?invert_in_darkmode" align=middle width=9.553335pt height=22.74591pt/> and <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/07617f9d8fe48b4a7b3f523d6730eef0.svg?invert_in_darkmode" align=middle width=9.86799pt height=14.10255pt/> (variables are dropped for visibility):
 
@@ -111,7 +113,6 @@ For that, one can introduce the Lagrangian <img src="https://rawgit.com/fgueniat
 where <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/0103700fa3db36d24bf7a94ad80ae6a5.svg?invert_in_darkmode" align=middle width=9.498225pt height=27.59823pt/> is the transpose operator. 
 Naturally, both <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/6dbb78540bd76da3f1625782d42d6d16.svg?invert_in_darkmode" align=middle width=9.375135pt height=14.10255pt/> and <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/02578075daf3b73a16fbd736847ed846.svg?invert_in_darkmode" align=middle width=9.375135pt height=21.87504pt/> are considered as variables.
 
-As <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/b8bc815b5e9d5177af01fd4d3d3c2f10.svg?invert_in_darkmode" align=middle width=12.80598pt height=22.38192pt/> and <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/3cf4fbd05970446973fc3d9fa3fe3c41.svg?invert_in_darkmode" align=middle width=8.398995pt height=14.10255pt/> are null by construction, <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/fd8be73b54f5436a5cd2e73ba9b6bfa9.svg?invert_in_darkmode" align=middle width=9.553335pt height=22.74591pt/> and <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/07617f9d8fe48b4a7b3f523d6730eef0.svg?invert_in_darkmode" align=middle width=9.86799pt height=14.10255pt/> can be designed specifically to alleviate the computations.
 
 The gradient <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/cdcddae0e184a3d241940d91f2a584d1.svg?invert_in_darkmode" align=middle width=75.926895pt height=28.61199pt/> of <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/ca0f3a73abc788c4c397d1c983cc5b31.svg?invert_in_darkmode" align=middle width=11.14542pt height=22.38192pt/> is
 <p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/08fa9cd6495b8cbafdf4039d351151f5.svg?invert_in_darkmode" align=middle width=667.4877pt height=41.616135pt/></p>
@@ -123,20 +124,24 @@ The term in <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/c2f4
 
 <p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/043c30c77ecdbca20a13de40c0e9cca9.svg?invert_in_darkmode" align=middle width=493.4127pt height=41.121795pt/></p>
 
+
 The term associated with <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/d334a39817444a817c8f52832258f502.svg?invert_in_darkmode" align=middle width=16.437795pt height=22.74591pt/> can now be replaced.
 
 Ordering terms leads to:
 
 <p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/833c8c9603b1acb0cee91506a1b05514.svg?invert_in_darkmode" align=middle width=947.7501pt height=42.58287pt/></p>
 
-Proper choices for <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/0ae3f8e52e8833a55be05df21031a4fc.svg?invert_in_darkmode" align=middle width=9.553335pt height=22.74591pt/> and <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/07617f9d8fe48b4a7b3f523d6730eef0.svg?invert_in_darkmode" align=middle width=9.86799pt height=14.10255pt/> allow to simplify the expression of <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/77f72004c2606e02e7d9060c80ccca7e.svg?invert_in_darkmode" align=middle width=31.963965pt height=22.38192pt/>.
+As <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/b8bc815b5e9d5177af01fd4d3d3c2f10.svg?invert_in_darkmode" align=middle width=12.80598pt height=22.38192pt/> and <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/3cf4fbd05970446973fc3d9fa3fe3c41.svg?invert_in_darkmode" align=middle width=8.398995pt height=14.10255pt/> are null by construction, <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/fd8be73b54f5436a5cd2e73ba9b6bfa9.svg?invert_in_darkmode" align=middle width=9.553335pt height=22.74591pt/> and <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/07617f9d8fe48b4a7b3f523d6730eef0.svg?invert_in_darkmode" align=middle width=9.86799pt height=14.10255pt/> can be designed specifically to alleviate the computations.
+
+Indeed, proper choices for <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/0ae3f8e52e8833a55be05df21031a4fc.svg?invert_in_darkmode" align=middle width=9.553335pt height=22.74591pt/> and <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/07617f9d8fe48b4a7b3f523d6730eef0.svg?invert_in_darkmode" align=middle width=9.86799pt height=14.10255pt/> allow to simplify the expression of <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/77f72004c2606e02e7d9060c80ccca7e.svg?invert_in_darkmode" align=middle width=31.963965pt height=22.38192pt/>.
+
 The choice of <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/544873064b19aa6af6bc1a0f71eddf75.svg?invert_in_darkmode" align=middle width=64.20282pt height=24.56553pt/> nullifies the term <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/5701f8d299483d8e6b8f11c650913388.svg?invert_in_darkmode" align=middle width=142.81608pt height=47.6718pt/>.
 <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/0ae3f8e52e8833a55be05df21031a4fc.svg?invert_in_darkmode" align=middle width=9.553335pt height=22.74591pt/> can then be chosen as the solution of the so-called adjoint equation(see Ledimet 1986,Talagrand 1997):
 
 <p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/16cd4b56c6e04130965b7a0b2f11f729.svg?invert_in_darkmode" align=middle width=333.12345pt height=39.30498pt/></p>
 integrated backwards in time. 
 
-*This equation is solved using the function integration_backward*
+> This equation is solved using the function `integration_backward`
 
 To do so, linearize <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/b8bc815b5e9d5177af01fd4d3d3c2f10.svg?invert_in_darkmode" align=middle width=12.80598pt height=22.38192pt/> around <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/6dbb78540bd76da3f1625782d42d6d16.svg?invert_in_darkmode" align=middle width=9.375135pt height=14.10255pt/> and replace <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/6dbb78540bd76da3f1625782d42d6d16.svg?invert_in_darkmode" align=middle width=9.375135pt height=14.10255pt/> 
 
@@ -149,5 +154,5 @@ Then, computing <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/
 
 <p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/ada9d358292a2ddd134f8456fade4925.svg?invert_in_darkmode" align=middle width=325.57965pt height=41.616135pt/></p>
 
-*This equation is solved using the function gradient_q*
+> This equation is solved using the function `gradient_q`
 
