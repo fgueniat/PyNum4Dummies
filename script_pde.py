@@ -1,5 +1,6 @@
 import solver_matrix_tools as st
 import numpy as np
+import plot_tools as pt
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
@@ -12,14 +13,6 @@ This data is used either for:
     b/ identify initial conditions for the model that allow to reproduce as good as possible the data
     c/ both a/ and b/
 
-1/ the user defines the physics (see script_pde.py)
-2/ the user defines some of the adjoint operators
-3/ 
-    i/ parameters are updated
-    ii/ the model is integrated with the current parameters
-    iii/ the adjoint equation is solved
-    iv/ the gradient is computed
-    v/ goes to i/
 
 '''
 
@@ -28,25 +21,18 @@ This data is used either for:
 # parameters
 ##################################################
 ##################################################
-
 # Data Assimilation objective:
 objectives = ['CI and MODEL','MODEL','CI']
 objective = objectives[0]
 
-# parameters for the minimization
-n_adj_max = 30
-eps_DJ = 1.e-5
-eps_delta_DJ = 1.e-4
-
-# type of integration
-integration_method = 'RK4'
+# integration
+method = 'RK4'
 
 # physics
 if objective == 'CI':
     q_physics= [6.5 , 0.45]
 else:
     q_physics= [7.2 , 0.35]
-
 #
 q_data = [6.5,  0.45]
 c_0,nu = q_physics[0],q_physics[1]
@@ -68,6 +54,7 @@ s_dev2, mu_offset = .3, -1.
 u_background = 0.
 u0_init  = np.exp(- (x-mu_offset)**2 / (2. * s_dev2) ) / np.sqrt(2. * np.pi * s_dev2)
 u0_init += u_background
+
 
 # Data
 if objective == 'CI' or objective == 'CI and MODEL':
@@ -106,8 +93,7 @@ verbose = False
 ##################################################
 ##################################################
 
-### Physics
-#
+
 def rhs(u,x,t,dt):
     return np.zeros(u.size)
 
@@ -119,18 +105,6 @@ def rhs_adjoint(lambda_,u,x,t,dt,p):
     #return np.zeros(lambda_.size)
     return 2. * (u-p) # j = ||u-y|| ^2
 
-### Adjoint
-#  Construction of individual operators:
-
-operator_advection_data         = lambda u,x,t,dt: st.operator_advection(u,x,t,dt,p=c_data)
-operator_NL_advection_data      = lambda u,x,t,dt: st.operator_NL_advection(u,x,t,dt,p=1.)
-operator_diffusion_data         = lambda u,x,t,dt: st.operator_diffusion(u,x,t,dt,p=nu_data)        # 
-#
-operators_data = [
-                    operator_advection_data,
-                    #operator_NL_advection_data,
-                    operator_diffusion_data,
-                ]
 
 
 
@@ -146,42 +120,17 @@ lambdas_s = []
 ##################################################
 ##################################################
 
-
-
-######################## DATA
-U_data,t_sampled_data = [],[]
-n_save = 1
-u = u_data.copy()
-# Loop
-for i_t in xrange(n_it):
-    u = st.integration(u,x,time[i_t],dt,operators_data,method=integration_method,bc_type = bc_type, bcs = bcs,return_rhs = False)
-    #
-    if verbose is True:
-        if i_t%int(n_it/10.) == 0:
-            s = 'computations data: ' + '%.0f' % (10.*i_t/int(n_it/10)) + '%'
-            print(s)
-        #
-    #
-    if i_t%n_save == 0:#save only one solution every n_save 
-        U_data.append(u.copy())
-        t_sampled_data.append(time[i_t])
-
-
-
-for i_adjoint in range(n_adj_max):
+for i_adjoint in range(25):
     if i_adjoint>1:
-        if np.linalg.norm(DJ)<eps_DJ:
+        if np.linalg.norm(DJ)<1.e-6:
             print('gradient is small: break')
             break
     if i_adjoint>2:
-        if np.linalg.norm(gradients[-1] - gradients[-2]) < eps_delta_DJ:
+        if np.linalg.norm(gradients[-1] - gradients[-2]) < 1.e-5:
             print('gradient update is small: break')
             break
-    ## update model:
-    # update all parameters with the gradient
+    # update model:
     q= q + 1.*DJ
-    #
-    # update model parameters
     if objective == 'CI':
         c_0,nu = q_physics[0],q_physics[1]
     else:
@@ -192,17 +141,20 @@ for i_adjoint in range(n_adj_max):
     else:
         u0 = u0_init
     #
+    lambda0 = np.zeros(n_x)
     #
-    ##################################################
-    # define the equation for the model:
-    ##################################################
-    #  Construction and update of individual operators:
+    #######
+    #  Construction of individual operators:
     operator_advection              = lambda u,x,t,dt: st.operator_advection(u,x,t,dt,p=c_0)
     operator_NL_advection           = lambda u,x,t,dt: st.operator_NL_advection(u,x,t,dt,p=1.)
     operator_diffusion              = lambda u,x,t,dt: st.operator_diffusion(u,x,t,dt,p=nu)    
+    operator_advection_data         = lambda u,x,t,dt: st.operator_advection(u,x,t,dt,p=c_data)
+    operator_NL_advection_data      = lambda u,x,t,dt: st.operator_NL_advection(u,x,t,dt,p=1.)
+    operator_diffusion_data         = lambda u,x,t,dt: st.operator_diffusion(u,x,t,dt,p=nu_data)    
     operator_advection_adjoint      = lambda lambda_,u,x,t,dt: st.operator_advection_adjoint(lambda_,u,x,t,dt,p=c_0)
     operator_NL_advection_adjoint   = lambda lambda_,u,x,t,dt: st.operator_NL_advection_adjoint(lambda_,u,x,t,dt,p=1.)
     operator_diffusion_adjoint      = lambda lambda_,u,x,t,dt: st.operator_diffusion_adjoint(lambda_,u,x,t,dt,p=nu)  
+     
     #
     ########
     #  Construction of the operators:
@@ -210,6 +162,13 @@ for i_adjoint in range(n_adj_max):
                     operator_advection,
                     #operator_NL_advection,
                     operator_diffusion,
+                ]
+    #
+    # 
+    operators_data = [
+                    operator_advection_data,
+                    #operator_NL_advection_data,
+                    operator_diffusion_data,
                 ]
     #
     #
@@ -221,7 +180,9 @@ for i_adjoint in range(n_adj_max):
     #
     #
     ##################################################
+    ##################################################
     # Compute the solution
+    ##################################################
     ##################################################
     # Initialize solution
     U,t_sampled = [],[]
@@ -229,8 +190,7 @@ for i_adjoint in range(n_adj_max):
     u = u0.copy()
     # Loop
     for i_t in xrange(n_it):
-        u = st.integration(u,x,time[i_t],dt,operators,method=integration_method,bc_type = bc_type, bcs = bcs,return_rhs = False)
-        #
+        u = st.integration(u,x,time[i_t],dt,operators,method=method,bc_type = bc_type, bcs = bcs,return_rhs = False)
         if verbose is True:
             if i_t%int(n_it/10.) == 0:
                 s = 'computations U:' + '%.0f' % (10.*i_t/int(n_it/10)) + '%'
@@ -242,12 +202,32 @@ for i_adjoint in range(n_adj_max):
             t_sampled.append(time[i_t])
         #
     #
+    ######################## DATA ARE COMPUTED HERE #############33
+    if i_adjoint<1: # data computed only one time
+        U_data,t_sampled_data = [],[]
+        n_save = 1
+        u = u_data.copy()
+        # Loop
+        for i_t in xrange(n_it):
+            u = st.integration(u,x,time[i_t],dt,operators_data,method=method,bc_type = bc_type, bcs = bcs,return_rhs = False)
+            if verbose is True:
+                if i_t%int(n_it/10.) == 0:
+                    s = 'computations data: ' + '%.0f' % (10.*i_t/int(n_it/10)) + '%'
+                    print(s)
+                #
+            #
+            if i_t%n_save == 0:#save only one solution every n_save 
+                U_data.append(u.copy())
+                t_sampled_data.append(time[i_t])
+            #
+        #
     #
+    ##################################################
     ##################################################
     # Compute the gradient
     ##################################################
-    # initialize lambda
-    lambda0 = np.zeros(n_x)
+    ##################################################
+    #
     # lambda
     if 1:
         lambdas = []
@@ -255,7 +235,7 @@ for i_adjoint in range(n_adj_max):
         lambda_ = lambda0.copy()
         # Loop
         for i_t in xrange(n_it-1,-1,-1):
-            lambda_ = st.integration_backward_mat(lambda_,U[i_t],x,time[i_t],-dt,U_data[i_t],operators=operators_adjoint,rhs_forcing = rhs_adjoint,method=integration_method,bc_type = bc_type, bcs = bcs,return_rhs = False)
+            lambda_ = st.integration_backward_mat(lambda_,U[i_t],x,time[i_t],-dt,U_data[i_t],operators=operators_adjoint,rhs_forcing = rhs_adjoint,method=method,bc_type = bc_type, bcs = bcs,return_rhs = False)
             if verbose is True:
                 if i_t%int(n_it/10.) == 0:
                     s = 'computations adjoint:' + '%.0f' % (10.*i_t/int(n_it/10)) + '%'
@@ -309,21 +289,21 @@ for i_adjoint in range(n_adj_max):
     #
     #
     if objective == 'MODEL':
-        operator_dqj = [null_dqj for i in range(n_q)]
-        operator_dqf = [dqf_c,dqf_nu]
-        operator_dqg = [null_dqg for i in range(n_q)]
+        dqj = [null_dqj for i in range(n_q)]
+        dqf = [dqf_c,dqf_nu]
+        dqg = [null_dqg for i in range(n_q)]
     #
     if objective == 'CI':
-        operator_dqj = [null_dqj for i in range(n_q)]
-        operator_dqf = [null_dqf for i in range(n_q)] 
-        operator_dqg = [( lambda i: lambda u,q: ci_dqg(u,q,i) )(i) for i in range(n_q)]
+        dqj = [null_dqj for i in range(n_q)]
+        dqf = [null_dqf for i in range(n_q)] 
+        dqg = [( lambda i: lambda u,q: ci_dqg(u,q,i) )(i) for i in range(n_q)]
     #
     if objective == 'CI and MODEL':
-        operator_dqj = [null_dqj for i in range(n_q)]
-        operator_dqf = [null_dqf for i in range(n_x)] + [dqf_c,dqf_nu]
-        operator_dqg = [( lambda i: lambda u,q: ci_dqg(u,q,i) )(i) for i in range(n_q)]
+        dqj = [null_dqj for i in range(n_q)]
+        dqf = [null_dqf for i in range(n_x)] + [dqf_c,dqf_nu]
+        dqg = [( lambda i: lambda u,q: ci_dqg(u,q,i) )(i) for i in range(n_q)]
     #
-    DJ = st.gradient_q(u0,U,lambdas,U_data,x,time,q,operator_dqj,operator_dqf,operator_dqg,mu)
+    DJ = st.gradient_q(u0,U,lambdas,U_data,x,time,q,dqj,dqf,dqg,mu)
     #
     ########################################################
     ################### PRINTS #############################
@@ -362,17 +342,13 @@ for i_adjoint in range(n_adj_max):
     gradients.append(DJ)
     #
 #
-
-
-
-
+#
 ##################################################
 ##################################################
-# Plots
+# Plot the solution
 ##################################################
 ##################################################
 #
-# Plot the solution
 if 0:
     def update_line(num, U,x,line,verbose = True):
         '''
@@ -399,8 +375,12 @@ if 0:
     plt.show()
 
 
-#
+##################################################
+##################################################
 # Plot the adjoint
+##################################################
+##################################################
+#
 if 0:
     def update_line_adjoint(num, lambdas,x,line,verbose = True):
         '''
@@ -426,8 +406,13 @@ if 0:
     #
     plt.show()
 
+##################################################
+##################################################
+# Plot the adjoint + burger
+##################################################
+##################################################
 #
-# Plot the adjoint + solution
+#
 if 0:
     def update_line(num, lambdas, U,V,x,line1,line2,line3,verbose = True):
         '''
@@ -460,5 +445,17 @@ if 0:
     plt.show()
 
 
+
+if 0:
+    pt.closeall()
+    pt.multiplot2(
+        (x,x,x,x),
+        (U[0],U_data[0],lambdas[-1], (-U[0] + U_data[0])*2.),
+        pt.Paradraw(colors = ['k','r','k','g'],
+            marks = ['-','-','--','--'],
+            thickness = [3,3,3,2],
+            legend = ['u','y','$\lambda$','y-u'],
+            )
+        )
 
 
