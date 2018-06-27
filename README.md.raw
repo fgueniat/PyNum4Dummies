@@ -17,7 +17,7 @@ The project consists in a library and a collection of scripts that illustrates i
 
 
 ### The librairie 
-solver_tools.py
+`solver_tools.py`
 
 It contains:
 * a function to integrate the equation $ \frac{\partial u}{\partial t} = RHS(u,x,t) $
@@ -46,8 +46,8 @@ The various scripts illustrate the use of the library:
 
 
 # Todo:
-* advection: instabilities in LUD when too stiff ? Flux limiter ?
-
+[] advection: instabilities in LUD when too stiff ? Flux limiter ?
+[] add $\partial_{xxx}$/ $\partial_{xxxx}$ for KdW or Kuramoto–Sivashinsky equations ?
 # Explanations
 ## Provided discretization schemes
 ### Advection
@@ -64,6 +64,11 @@ central difference scheme is used to discretize, in space, the following diffusi
 $$ nu \frac{\partial^2 u} {\partial x^2} $$ 
 
 ### Solving a Partial Differential Equation
+Let's use a simple example here, the Burger equation:
+$$ \frac{\partial u} {\partial t} = -u \frac{\partial u}{\partial x} $$
+
+We hence have $ \frac{\partial u} {\partial t} = \sum_i L_i u$, where 
+
 > $F$ will be constructed as a list of operators.
 
 ### Computing the gradient of the cost functional
@@ -120,10 +125,10 @@ $D_q J = \frac{D\,J}{Dq}$.
 
 Estimation of the gradient with finite differentiation is out of reach if the size of $q$ is large (if $n_q$ is the size of $q$, then $2 n_q$ evaluation of the system are needed).
 
-For that, one can introduce the Lagrangian $ L := L \bigg(u,\dot{u},q,\lambda,\mu\bigg)$, associated with the two Lagrange parameters $\lambda$ and $\mu$ (variables are dropped for visibility):
+For that, one can introduce the Lagrangian $ \mathcal{L} := \mathcal{L} \bigg(u,\dot{u},q,\lambda,\mu\bigg)$, associated with the two Lagrange parameters $\lambda$ and $\mu$ (variables are dropped for visibility):
 
 $$
-   L = 
+   \mathcal{L} = 
     \int_0^T \bigg[ j  +  {\lambda}^T F  \bigg] {\textrm d}t + {\mu}^T g,
 $$
 
@@ -131,9 +136,9 @@ where $^T$ is the transpose operator.
 Naturally, both $u$ and $\dot{u}$ are considered as variables.
 
 
-The gradient $D_q L = \frac{D L}{Dq}$ of $ L$ is
+The gradient $D_q \mathcal{L} = \frac{D L}{Dq}$ of $ \mathcal{L}$ is
 $$
-		D_q L = 
+		D_q \mathcal{L} = 
 			\int_0^T  \bigg[
 				\partial_u j \partial_q u  +\partial_q j 
 				+ \lambda^T \partial_u F \partial_q u 
@@ -144,7 +149,7 @@ $$
 		   +    {\mu}^T \partial_q g.
 $$
 
-Upon optimality, one has $D_q L = D_q J$.
+Upon optimality, one has $D_q \mathcal{L} = D_q J$.
 
 The term in $\partial_{\dot{u}}$ cannot be easily estimated. An integration by parts gives:
 
@@ -162,7 +167,7 @@ The term associated with $\partial_{ \dot{u} }$ can now be replaced.
 Ordering terms leads to:
 
 $$
-	D_q L  = 
+	D_q \mathcal{L}  = 
 		\int_0^T  
 			\bigg[
 					\bigg(
@@ -190,7 +195,7 @@ $$
 
 As $F$ and $g$ are null by construction, $\lambda$ and $\mu$ can be designed specifically to alleviate the computations.
 
-Indeed, proper choices for $ \lambda $ and $\mu$ allow to simplify the expression of $D_q L$.
+Indeed, proper choices for $ \lambda $ and $\mu$ allow to simplify the expression of $D_q \mathcal{L}$.
 
 The choice of $ \lambda (T) =  0$ nullifies the term $\left.\bigg( \lambda^T \partial_{ \dot{u} } F  \bigg) \right|_T \partial_q u(T)$.
 $ \lambda $ can then be chosen as the solution of the so-called adjoint equation(see Ledimet 1986,Talagrand 1997):
@@ -216,7 +221,7 @@ Finally, the Lagrange parameter $ \mu $ is set so that it nullifies the componen
 
 $$ \left.  \bigg\{ \mu^T \partial_u g   -  \lambda^T\partial_{\dot{u}} F   \bigg\} \right|_0 = 0.$$
 
-Then, computing $D_q L$, hence $ D_qJ$, is achieved by the integration of:
+Then, computing $D_q \mathcal{L}$, hence $ D_qJ$, is achieved by the integration of:
 
 $$
 		 D_qJ \bigg(u,q\bigg) = 
