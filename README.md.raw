@@ -65,11 +65,11 @@ $$ nu \frac{\partial^2 u} {\partial x^2} $$
 
 ### Solving a Partial Differential Equation
 Let's use a simple example here, the Burger equation:
-$$ \frac{\partial u} {\partial t} = -u \frac{\partial u}{\partial x} $$
+$$ \mathcal{F}(u,t) := \frac{\partial u} {\partial t}  + u \frac{\partial u}{\partial x}  - \nu \frac{\partial^2 u}{\partial x^2} = 0$$
 
 We hence have $ \frac{\partial u} {\partial t} = \sum_i L_i u$, where 
 
-> $F$ will be constructed as a list of operators.
+> $\mathcal{F}$ will be constructed as a list of operators.
 
 ### Computing the gradient of the cost functional
 
@@ -82,15 +82,15 @@ J(q) = \int_0^T
 $$
 s.t. the physics:
 $$
-F(u,\dot{u},q,t) = 0
+\mathcal{F}(u,\dot{u},q,t) = 0
 $$
 
 > The physics is solved using the function `integration_forward`
 
-For instance, considering $q\equiv \{q_c,q_u\}$, and the Burgers' equation, we have
+For instance, considering $q\equiv \{q_c,q_u\}$, and the inviscid Burgers' equation, we have
 
 $$
-F(u,\dot{u},q,t) := \frac{\partial u} {\partial t} + q_c u \frac{\partial u}{\partial x}  =0
+\mathcal{F}(u,\dot{u},q,t) := \frac{\partial u} {\partial t} + q_c u \frac{\partial u}{\partial x}  = 0
 $$
 
 
@@ -129,7 +129,7 @@ For that, one can introduce the Lagrangian $ \mathcal{L} := \mathcal{L} \bigg(u,
 
 $$
    \mathcal{L} = 
-    \int_0^T \bigg[ j  +  {\lambda}^T F  \bigg] {\textrm d}t + {\mu}^T g,
+    \int_0^T \bigg[ j  +  {\lambda}^T \mathcal{F}  \bigg] {\textrm d}t + {\mu}^T g,
 $$
 
 where $^T$ is the transpose operator. 
@@ -141,9 +141,9 @@ $$
 		D_q \mathcal{L} = 
 			\int_0^T  \bigg[
 				\partial_u j \partial_q u  +\partial_q j 
-				+ \lambda^T \partial_u F \partial_q u 
-			    + \lambda^T\partial_{ \dot{u} } F \partial_q \dot{u}  
-			    + \lambda^T\partial_q F 
+				+ \lambda^T \partial_u \mathcal{F} \partial_q u 
+			    + \lambda^T\partial_{ \dot{u} } \mathcal{F} \partial_q \dot{u}  
+			    + \lambda^T\partial_q \mathcal{F} 
 				\bigg] {\textrm d}t 
 		   +    {\mu}^T \partial_{u(0)} g \partial_q u(0)  
 		   +    {\mu}^T \partial_q g.
@@ -155,10 +155,10 @@ The term in $\partial_{\dot{u}}$ cannot be easily estimated. An integration by p
 
 
 $$
-		\int_0^T   {   {\lambda}}^T\partial_{\dot{u}} F  \partial_q \dot{u} {\textrm d}t = 
-		  \left[   {\lambda}^T\partial_{\dot{u}} F  \partial_q u \right]_0^T 
-		   - \int_0^T \left\{\dot{   {\lambda}}^T\partial_{\dot{u}} F  \right. 
-		   \left. +    {\lambda}^T \partial_t \partial_{\dot{u}}F  \right\} \partial_q u {\textrm d}t.
+		\int_0^T   {   {\lambda}}^T\partial_{\dot{u}} \mathcal{F}  \partial_q \dot{u} {\textrm d}t = 
+		  \left[   {\lambda}^T\partial_{\dot{u}} \mathcal{F}  \partial_q u \right]_0^T 
+		   - \int_0^T \left\{\dot{   {\lambda}}^T\partial_{\dot{u}} \mathcal{F}  \right. 
+		   \left. +    {\lambda}^T \partial_t \partial_{\dot{u}} \mathcal{F}  \right\} \partial_q u {\textrm d}t.
 $$
 
 
@@ -171,41 +171,41 @@ $$
 		\int_0^T  
 			\bigg[
 					\bigg(
-						\partial_u j  + \lambda^T \partial_u  F
+						\partial_u j  + \lambda^T \partial_u  \mathcal{F}
 						-\bigg\{ 
-							\dot{ \lambda}^T \partial_{ \dot{u} } F 
-				   			+ \lambda^T \partial_t \partial_{ \dot{u} } F   
+							\dot{ \lambda}^T \partial_{ \dot{u} } \mathcal{F} 
+				   			+ \lambda^T \partial_t \partial_{ \dot{u} } \mathcal{F}   
 						\bigg\}
 					\bigg) {\textrm d}_q u
-		 	+ \partial_q j + \lambda^T\partial_q F   
+		 	+ \partial_q j + \lambda^T\partial_q \mathcal{F}  
 			\bigg] {\textrm d}t  
 	  	+ \left.
 			\bigg(
 			   \mu^T \partial_u g  
-	 		 	- \lambda^T \partial_{ \dot{u} } F   
+	 		 	- \lambda^T \partial_{ \dot{u} } \mathcal{F}   
 			\bigg)
 		\right|_0 \partial_q u(0)
  		+ \mu^T \partial_q g 
 	   	+ \left.
 			\bigg(  
-				\lambda^T \partial_{ \dot{u} } F  
+				\lambda^T \partial_{ \dot{u} } \mathcal{F}  
 			\bigg) 
 		\right|_T \partial_q u(T)
 $$
 
-As $F$ and $g$ are null by construction, $\lambda$ and $\mu$ can be designed specifically to alleviate the computations.
+As $\mathcal{F}$ and $g$ are null by construction, $\lambda$ and $\mu$ can be designed specifically to alleviate the computations.
 
 Indeed, proper choices for $ \lambda $ and $\mu$ allow to simplify the expression of $D_q \mathcal{L}$.
 
-The choice of $ \lambda (T) =  0$ nullifies the term $\left.\bigg( \lambda^T \partial_{ \dot{u} } F  \bigg) \right|_T \partial_q u(T)$.
+The choice of $ \lambda (T) =  0$ nullifies the term $\left.\bigg( \lambda^T \partial_{ \dot{u} } \mathcal{F}  \bigg) \right|_T \partial_q u(T)$.
 $ \lambda $ can then be chosen as the solution of the so-called adjoint equation(see Ledimet 1986,Talagrand 1997):
 
 $$
 		\bigg( 
-			\partial_u j    +    \lambda^T \partial_u  F  
+			\partial_u j    +    \lambda^T \partial_u  \mathcal{F}  
 			- \bigg\{ 
-					\dot{\lambda}^T \partial_{ \dot{u} } F  
-				   + \lambda^T \partial_t \partial_{ \dot{u} } F   
+					\dot{\lambda}^T \partial_{ \dot{u} } \mathcal{F}  
+				   + \lambda^T \partial_t \partial_{ \dot{u} } \mathcal{F}   
 			\bigg\}
 		\bigg) 
 			=  0,
@@ -214,18 +214,18 @@ integrated backwards in time.
 
 > This equation is solved using the function `integration_backward`
 
-To do so, linearize $F$ around $u$ and replace $u$ 
+To do so, linearize $\mathcal{F}$ around $u$ and replace $u$ 
 
 
 Finally, the Lagrange parameter $ \mu $ is set so that it nullifies the component associated with $\partial_q u(0)$:
 
-$$ \left.  \bigg\{ \mu^T \partial_u g   -  \lambda^T\partial_{\dot{u}} F   \bigg\} \right|_0 = 0.$$
+$$ \left.  \bigg\{ \mu^T \partial_u g   -  \lambda^T\partial_{\dot{u}} \mathcal{F}   \bigg\} \right|_0 = 0.$$
 
 Then, computing $D_q \mathcal{L}$, hence $ D_qJ$, is achieved by the integration of:
 
 $$
 		 D_qJ \bigg(u,q\bigg) = 
-		  \int_0^T  \bigg[  \partial_q j     +  \lambda ^T\partial_q F  \bigg] {\textrm d}t 
+		  \int_0^T  \bigg[  \partial_q j     +  \lambda ^T\partial_q \mathcal{F}  \bigg] {\textrm d}t 
 		  +      \mu^T \partial_q g.
 $$
 
