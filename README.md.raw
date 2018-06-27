@@ -47,8 +47,8 @@ The various scripts illustrate the use of the library:
 
 # Todo:
 - [x] add adjoint
-- [] advection: instabilities in LUD when too stiff ? Flux limiter ?
-- [] add $\partial_{xxx}$/ $\partial_{xxxx}$ for KdW or Kuramoto–Sivashinsky equations ?
+- [ ] advection: instabilities in LUD when too stiff ? Flux limiter ?
+- [ ] add $\partial_{xxx}$/ $\partial_{xxxx}$ for KdW or Kuramoto–Sivashinsky equations ?
 # Explanations
 ## Provided discretization schemes
 ### Advection

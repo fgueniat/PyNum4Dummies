@@ -47,8 +47,8 @@ The various scripts illustrate the use of the library:
 
 # Todo:
 - [x] add adjoint
-- [] advection: instabilities in LUD when too stiff ? Flux limiter ?
-- [] add <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/9a71e411a99b8df0c66c265d4cdf85da.svg?invert_in_darkmode" align=middle width=30.97413pt height=22.74591pt/>/ <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/23ae0d83f5393e9d38dc1ab12c4973d9.svg?invert_in_darkmode" align=middle width=38.40078pt height=22.74591pt/> for KdW or Kuramoto–Sivashinsky equations ?
+- [ ] advection: instabilities in LUD when too stiff ? Flux limiter ?
+- [ ] add <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/9a71e411a99b8df0c66c265d4cdf85da.svg?invert_in_darkmode" align=middle width=30.97413pt height=22.74591pt/>/ <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/23ae0d83f5393e9d38dc1ab12c4973d9.svg?invert_in_darkmode" align=middle width=38.40078pt height=22.74591pt/> for KdW or Kuramoto–Sivashinsky equations ?
 # Explanations
 ## Provided discretization schemes
 ### Advection
