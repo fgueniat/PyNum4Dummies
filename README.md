@@ -46,8 +46,9 @@ The various scripts illustrate the use of the library:
 
 
 # Todo:
-[] advection: instabilities in LUD when too stiff ? Flux limiter ?
-[] add <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/9a71e411a99b8df0c66c265d4cdf85da.svg?invert_in_darkmode" align=middle width=30.97413pt height=22.74591pt/>/ <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/23ae0d83f5393e9d38dc1ab12c4973d9.svg?invert_in_darkmode" align=middle width=38.40078pt height=22.74591pt/> for KdW or Kuramoto–Sivashinsky equations ?
+- [x] add adjoint
+- [] advection: instabilities in LUD when too stiff ? Flux limiter ?
+- [] add <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/9a71e411a99b8df0c66c265d4cdf85da.svg?invert_in_darkmode" align=middle width=30.97413pt height=22.74591pt/>/ <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/23ae0d83f5393e9d38dc1ab12c4973d9.svg?invert_in_darkmode" align=middle width=38.40078pt height=22.74591pt/> for KdW or Kuramoto–Sivashinsky equations ?
 # Explanations
 ## Provided discretization schemes
 ### Advection
@@ -71,7 +72,8 @@ Let's use a simple example here, the Burger equation:
 
 In the present approach, we chose to separate the time derivative operator from the spatial operators:
 <p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/f0bd8b387fe19e78c66b6a63a3164852.svg?invert_in_darkmode" align=middle width=245.256pt height=35.749725pt/></p>
-with <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/3aec98a126651a10d31427027226826d.svg?invert_in_darkmode" align=middle width=89.35014pt height=28.86675pt/> and <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/84481e6a2e7547617ef975ff490f37ba.svg?invert_in_darkmode" align=middle width=82.78941pt height=33.42009pt/>.
+
+with <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/3aec98a126651a10d31427027226826d.svg?invert_in_darkmode" align=middle width=89.35014pt height=28.86675pt/> and <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/84481e6a2e7547617ef975ff490f37ba.svg?invert_in_darkmode" align=middle width=82.78941pt height=33.42009pt/>. Clearly, these operators can be nonlinear.
 
 > The list of RHS operators <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/1d1c652dbcc962aaf99125ab3d937a38.svg?invert_in_darkmode" align=middle width=53.427pt height=24.56553pt/> will be passed to `integration_forward`, in order to solve the pde.
 

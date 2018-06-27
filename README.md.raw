@@ -46,8 +46,9 @@ The various scripts illustrate the use of the library:
 
 
 # Todo:
-[] advection: instabilities in LUD when too stiff ? Flux limiter ?
-[] add $\partial_{xxx}$/ $\partial_{xxxx}$ for KdW or Kuramoto–Sivashinsky equations ?
+- [x] add adjoint
+- [] advection: instabilities in LUD when too stiff ? Flux limiter ?
+- [] add $\partial_{xxx}$/ $\partial_{xxxx}$ for KdW or Kuramoto–Sivashinsky equations ?
 # Explanations
 ## Provided discretization schemes
 ### Advection
@@ -71,7 +72,8 @@ $$ \mathcal{F}(u,t) := \frac{\partial u} {\partial t}  + u \frac{\partial u}{\pa
 
 In the present approach, we chose to separate the time derivative operator from the spatial operators:
 $$ \frac{\partial u} {\partial t}  = - u \frac{\partial u}{\partial x}  + \nu \frac{\partial^2 u}{\partial x^2} = L_1 u  + L_2 u$$
-with $L_1 u = - u \frac{\partial u}{\partial x} $ and $L_2 u =  \nu \frac{\partial^2 u}{\partial x^2}$.
+
+with $L_1 u = - u \frac{\partial u}{\partial x} $ and $L_2 u =  \nu \frac{\partial^2 u}{\partial x^2}$. Clearly, these operators can be nonlinear.
 
 > The list of RHS operators $[L_1,L_2]$ will be passed to `integration_forward`, in order to solve the pde.
 
