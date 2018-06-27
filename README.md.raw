@@ -1,7 +1,7 @@
 # PyNum4Dummies
 
 ## Aims
-This project consists in a library solver_tools and a bunch of python scripts.
+This project consists in a library `solver_tools` and a bunch of python scripts.
 
 The library aims at solving "easy" 1d partial differential equations (pdes), for education and research.
 
@@ -83,7 +83,7 @@ with $L_1 u = - u \frac{\partial u}{\partial x} $ and $L_2 u =  \nu \frac{\parti
 We want to look at the problem depending on some parameters:
 
 $$
-J(q) = \int_0^T 
+J(u,q) = \int_0^1 
 		j(u,q,t)	
 	{\textrm d}t 
 $$
@@ -125,6 +125,7 @@ We want to find the argmin of J.
 This formalism is usefull in numerous situations, e.g.:
 * to identify the parameters of a model that will match some data
 * some initial conditions that will reproduce as good as possible the provided data.
+* optimal control, so that $u$ will reach a given state or follow a given trajectory.
 * more generally any user-defined constrains expressed in the form of $J$.
 
 Identifying the minimum of the $J$ relies on the gradient of the functional with respect to the parameters:
@@ -136,7 +137,7 @@ For that, one can introduce the Lagrangian $ \mathcal{L} := \mathcal{L} \bigg(u,
 
 $$
    \mathcal{L} = 
-    \int_0^T \bigg[ j  +  {\lambda}^T \mathcal{F}  \bigg] {\textrm d}t + {\mu}^T g,
+    \int_0^1 \bigg[ j  +  {\lambda}^T \mathcal{F}  \bigg] {\textrm d}t + {\mu}^T g,
 $$
 
 where $^T$ is the transpose operator. 
@@ -146,7 +147,7 @@ Naturally, both $u$ and $\dot{u}$ are considered as variables.
 The gradient $D_q \mathcal{L} = \frac{D L}{Dq}$ of $ \mathcal{L}$ is
 $$
 		D_q \mathcal{L} = 
-			\int_0^T  \bigg[
+			\int_0^1  \bigg[
 				\partial_u j \partial_q u  +\partial_q j 
 				+ \lambda^T \partial_u \mathcal{F} \partial_q u 
 			    + \lambda^T\partial_{ \dot{u} } \mathcal{F} \partial_q \dot{u}  
@@ -162,7 +163,7 @@ The term in $\partial_{\dot{u}}$ cannot be easily estimated. An integration by p
 
 
 $$
-		\int_0^T   {   {\lambda}}^T\partial_{\dot{u}} \mathcal{F}  \partial_q \dot{u} {\textrm d}t = 
+		\int_0^1   {   {\lambda}}^T\partial_{\dot{u}} \mathcal{F}  \partial_q \dot{u} {\textrm d}t = 
 		  \left[   {\lambda}^T\partial_{\dot{u}} \mathcal{F}  \partial_q u \right]_0^T 
 		   - \int_0^T \left\{\dot{   {\lambda}}^T\partial_{\dot{u}} \mathcal{F}  \right. 
 		   \left. +    {\lambda}^T \partial_t \partial_{\dot{u}} \mathcal{F}  \right\} \partial_q u {\textrm d}t.
@@ -175,7 +176,7 @@ Ordering terms leads to:
 
 $$
 	D_q \mathcal{L}  = 
-		\int_0^T  
+		\int_0^1  
 			\bigg[
 					\bigg(
 						\partial_u j  + \lambda^T \partial_u  \mathcal{F}
@@ -232,7 +233,7 @@ Then, computing $D_q \mathcal{L}$, hence $ D_qJ$, is achieved by the integration
 
 $$
 		 D_qJ \bigg(u,q\bigg) = 
-		  \int_0^T  \bigg[  \partial_q j     +  \lambda ^T\partial_q \mathcal{F}  \bigg] {\textrm d}t 
+		  \int_0^1  \bigg[  \partial_q j     +  \lambda ^T\partial_q \mathcal{F}  \bigg] {\textrm d}t 
 		  +      \mu^T \partial_q g.
 $$
 

@@ -1,7 +1,7 @@
 # PyNum4Dummies
 
 ## Aims
-This project consists in a library solver_tools and a bunch of python scripts.
+This project consists in a library `solver_tools` and a bunch of python scripts.
 
 The library aims at solving "easy" 1d partial differential equations (pdes), for education and research.
 
@@ -82,7 +82,7 @@ with <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/3aec98a1266
 
 We want to look at the problem depending on some parameters:
 
-<p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/0d357cfaf830c4e7c0dbc17ab01006b9.svg?invert_in_darkmode" align=middle width=155.940675pt height=41.121795pt/></p>
+<p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/6b5d87a347c821614f8b55c722508a6a.svg?invert_in_darkmode" align=middle width=169.6233pt height=40.675965pt/></p>
 s.t. the physics:
 <p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/d200567cf84acf5ab2731c66fe8752a1.svg?invert_in_darkmode" align=middle width=110.66583pt height=16.376943pt/></p>
 
@@ -111,6 +111,7 @@ We want to find the argmin of J.
 This formalism is usefull in numerous situations, e.g.:
 * to identify the parameters of a model that will match some data
 * some initial conditions that will reproduce as good as possible the provided data.
+* optimal control, so that <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/6dbb78540bd76da3f1625782d42d6d16.svg?invert_in_darkmode" align=middle width=9.375135pt height=14.10255pt/> will reach a given state or follow a given trajectory.
 * more generally any user-defined constrains expressed in the form of <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/8eb543f68dac24748e65e2e4c5fc968c.svg?invert_in_darkmode" align=middle width=10.65636pt height=22.38192pt/>.
 
 Identifying the minimum of the <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/8eb543f68dac24748e65e2e4c5fc968c.svg?invert_in_darkmode" align=middle width=10.65636pt height=22.38192pt/> relies on the gradient of the functional with respect to the parameters:
@@ -120,28 +121,28 @@ Estimation of the gradient with finite differentiation is out of reach if the si
 
 For that, one can introduce the Lagrangian <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/a7e36e2400be2dc4b9d95a945ac08ad3.svg?invert_in_darkmode" align=middle width=148.428555pt height=47.66652pt/>, associated with the two Lagrange parameters <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/fd8be73b54f5436a5cd2e73ba9b6bfa9.svg?invert_in_darkmode" align=middle width=9.553335pt height=22.74591pt/> and <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/07617f9d8fe48b4a7b3f523d6730eef0.svg?invert_in_darkmode" align=middle width=9.86799pt height=14.10255pt/> (variables are dropped for visibility):
 
-<p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/9756d33aca4c42e85b0b1b99e60d45f3.svg?invert_in_darkmode" align=middle width=209.3553pt height=41.616135pt/></p>
+<p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/368ec6b8ab07e536747b028f367e2e3b.svg?invert_in_darkmode" align=middle width=206.37375pt height=41.170305pt/></p>
 
 where <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/0103700fa3db36d24bf7a94ad80ae6a5.svg?invert_in_darkmode" align=middle width=9.498225pt height=27.59823pt/> is the transpose operator. 
 Naturally, both <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/6dbb78540bd76da3f1625782d42d6d16.svg?invert_in_darkmode" align=middle width=9.375135pt height=14.10255pt/> and <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/02578075daf3b73a16fbd736847ed846.svg?invert_in_darkmode" align=middle width=9.375135pt height=21.87504pt/> are considered as variables.
 
 
 The gradient <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/bd6c3bd24e54898b15c4e707f007eea6.svg?invert_in_darkmode" align=middle width=76.077045pt height=28.61199pt/> of <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/f240a2045bc52f353f0dfa6a0054016c.svg?invert_in_darkmode" align=middle width=11.29557pt height=22.38192pt/> is
-<p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/e3327ebc3bf1346251df67426a2b240e.svg?invert_in_darkmode" align=middle width=669.405pt height=41.616135pt/></p>
+<p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/d8555c3f42e49376b97626e02ba69eb8.svg?invert_in_darkmode" align=middle width=666.42345pt height=41.170305pt/></p>
 
 Upon optimality, one has <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/52af41d8ee5aa88040ceb890cd74d959.svg?invert_in_darkmode" align=middle width=85.45878pt height=22.38192pt/>.
 
 The term in <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/c2f43910af366cae2d41e81ddd7e93a5.svg?invert_in_darkmode" align=middle width=16.437795pt height=22.74591pt/> cannot be easily estimated. An integration by parts gives:
 
 
-<p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/865b05d77a5cce345b29f3caed172c2e.svg?invert_in_darkmode" align=middle width=495.7821pt height=41.121795pt/></p>
+<p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/0730187cc4f27608f78cf0efa12b847b.svg?invert_in_darkmode" align=middle width=492.80055pt height=41.121795pt/></p>
 
 
 The term associated with <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/d334a39817444a817c8f52832258f502.svg?invert_in_darkmode" align=middle width=16.437795pt height=22.74591pt/> can now be replaced.
 
 Ordering terms leads to:
 
-<p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/9daec7d8f6c2c7ec93d10db9f8a9473e.svg?invert_in_darkmode" align=middle width=951.4428pt height=42.58287pt/></p>
+<p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/6723dbf2d7962d18a7080ca751167a33.svg?invert_in_darkmode" align=middle width=948.4629pt height=42.13704pt/></p>
 
 As <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/84cc939597f3eec200843a2fc8830732.svg?invert_in_darkmode" align=middle width=13.39734pt height=22.38192pt/> and <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/3cf4fbd05970446973fc3d9fa3fe3c41.svg?invert_in_darkmode" align=middle width=8.398995pt height=14.10255pt/> are null by construction, <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/fd8be73b54f5436a5cd2e73ba9b6bfa9.svg?invert_in_darkmode" align=middle width=9.553335pt height=22.74591pt/> and <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/07617f9d8fe48b4a7b3f523d6730eef0.svg?invert_in_darkmode" align=middle width=9.86799pt height=14.10255pt/> can be designed specifically to alleviate the computations.
 
@@ -164,7 +165,7 @@ Finally, the Lagrange parameter <img src="https://rawgit.com/fgueniat/PyNum4Dumm
 
 Then, computing <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/d0401d7fec19d46153d33617ba7d0d7b.svg?invert_in_darkmode" align=middle width=32.114115pt height=22.38192pt/>, hence <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/8116b309283a1964c0488ce84f61c376.svg?invert_in_darkmode" align=middle width=31.474905pt height=22.38192pt/>, is achieved by the integration of:
 
-<p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/431004f78d0b6b5a7cf8468931eed6df.svg?invert_in_darkmode" align=middle width=326.1687pt height=41.616135pt/></p>
+<p align="center"><img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/f07e5a5062a3abc62fcb796a174cad33.svg?invert_in_darkmode" align=middle width=323.18715pt height=41.170305pt/></p>
 
 > This equation is solved using the function `gradient_q`
 
