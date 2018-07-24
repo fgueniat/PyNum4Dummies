@@ -47,6 +47,9 @@ The various scripts illustrate the use of the library:
 
 # Todo:
 - [x] add adjoint
+- [x] add assimilation
+- [x] add optimal control
+- [ ] Bug in OC: $lambdas$ are unstable on BC with dirichlet 
 - [ ] stencils for the pre-written adjoint adjoint ? 
 - [ ] advection: instabilities in LUD when too stiff ? Flux limiter ?
 - [ ] add $\partial_{xxx}$/ $\partial_{xxxx}$ for KdW or Kuramoto–Sivashinsky equations ?
