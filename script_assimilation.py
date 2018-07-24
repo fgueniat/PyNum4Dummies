@@ -34,9 +34,9 @@ objectives = ['CI and MODEL','MODEL','CI']
 objective = objectives[0]
 
 # parameters for the minimization
-n_adj_max = 30
-eps_DJ = 1.e-5
-eps_delta_DJ = 1.e-4
+n_adj_max = 20
+eps_DJ = 1.e-7
+eps_delta_DJ = 1.e-6
 
 # type of integration
 integration_method = 'RK4'
@@ -58,8 +58,8 @@ xmin,xmax = -5.,5.
 x = np.linspace(xmin,xmax,n_x)
 
 # time
-t0,dt = 0., 0.00025
-tmax = .25
+t0,dt = 0., 0.005
+tmax = 0.5
 n_it = int(tmax/dt)
 time = t0 + dt*np.arange(n_it)
 
@@ -96,8 +96,18 @@ bcs = None
 
 # plot parameters:
 ind_plot_start,ind_plot_end,n_plot_skip = 0,n_it,int(n_it/100)
-verbose = False
+verbose_data = False
+verbose_minimization = True
 
+def flux_limiters(u,i,m,treshold = None):
+    if u[i] > m:
+        u[i] = m
+    if treshold is None:
+        if u[i] < -m:
+            u[i] = -m
+    else:
+        if u[i]<treshold:
+            u[i] = treshold
 
 
 ##################################################
@@ -156,7 +166,7 @@ u = u_data.copy()
 for i_t in xrange(n_it):
     u = st.integration(u,x,time[i_t],dt,operators_data,method=integration_method,bc_type = bc_type, bcs = bcs,return_rhs = False)
     #
-    if verbose is True:
+    if verbose_data is True:
         if i_t%int(n_it/10.) == 0:
             s = 'computations data: ' + '%.0f' % (10.*i_t/int(n_it/10)) + '%'
             print(s)
@@ -169,6 +179,8 @@ for i_t in xrange(n_it):
 
 
 for i_adjoint in range(n_adj_max):
+    learning_factor = 1./(1.+(1.*i_adjoint)**.3)
+    print learning_factor
     if i_adjoint>1:
         if np.linalg.norm(DJ)<eps_DJ:
             print('gradient is small: break')
@@ -179,15 +191,20 @@ for i_adjoint in range(n_adj_max):
             break
     ## update model:
     # update all parameters with the gradient
-    q= q + 1.*DJ
+    flux_gradient_limiter = 1./tmax
+    q= q + 1.*DJ*learning_factor * flux_gradient_limiter
     #
     # update model parameters
     if objective == 'CI':
         c_0,nu = q_physics[0],q_physics[1]
     else:
+        flux_limiters(q,-2,10.)
+        flux_limiters(q,-1,1.,.1)
         c_0,nu = q[-2],q[-1]
+    #
     # update initial conditions:
     if objective == 'CI' or objective == 'CI and MODEL':
+        for i_x in range(n_x): flux_limiters(q,i_x,10.)
         u0 = q[:n_x]
     else:
         u0 = u0_init
@@ -231,9 +248,9 @@ for i_adjoint in range(n_adj_max):
     for i_t in xrange(n_it):
         u = st.integration(u,x,time[i_t],dt,operators,method=integration_method,bc_type = bc_type, bcs = bcs,return_rhs = False)
         #
-        if verbose is True:
-            if i_t%int(n_it/10.) == 0:
-                s = 'computations U:' + '%.0f' % (10.*i_t/int(n_it/10)) + '%'
+        if verbose_data is True:
+            if i_t%int(n_it/4.) == 0:
+                s = 'computations U:' + '%.0f' % (4.*i_t/int(n_it/25)) + '%'
                 print(s)
             #
         #
@@ -256,9 +273,9 @@ for i_adjoint in range(n_adj_max):
         # Loop
         for i_t in xrange(n_it-1,-1,-1):
             lambda_ = st.integration_backward_mat(lambda_,U[i_t],x,time[i_t],-dt,U_data[i_t],operators=operators_adjoint,rhs_forcing = rhs_adjoint,method=integration_method,bc_type = bc_type, bcs = bcs,return_rhs = False)
-            if verbose is True:
-                if i_t%int(n_it/10.) == 0:
-                    s = 'computations adjoint:' + '%.0f' % (10.*i_t/int(n_it/10)) + '%'
+            if verbose_data is True:
+                if i_t%int(n_it/4.) == 0:
+                    s = 'computations adjoint:' + '%.0f' % (4.*i_t/int(n_it/25)) + '%'
                     print(s)
                 #
             #
@@ -327,32 +344,33 @@ for i_adjoint in range(n_adj_max):
     #
     ########################################################
     ################### PRINTS #############################
-    s = '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
-    print(s)
-    s  = 'iteration : ' + str(i_adjoint)
-    print(s)
-    #
-    if (objective=='CI') is False:
-        s  = 'targets are:        '
-        s += ' c: '
-        s += '%.2f' % q_data[0]
-        s += ' nu: '
-        s += '%.2f' % q_data[1]
+    if verbose_minimization is True:
+        s = '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
         print(s)
-        s  = 'initial guesses are:'
-        s += ' c: '
-        s += '%.2f' % q[-2]
-        s += ' nu: '
-        s += '%.2f' % q[-1]
+        s  = 'iteration : ' + str(i_adjoint)
         print(s)
-        s  = 'Gradient DJ (model) is:'
-        s += '( %.4f ,' % DJ[-2]
-        s += ' %.4f )' % DJ[-1]
-        print(s)
-    if  (objective=='MODEL') is False:
-        s  = 'ecart CI: '
-        s += '%.4f' % (np.linalg.norm(u0 + DJ[:n_x] - u_data))
-        print(s)
+        #
+        if (objective=='CI') is False:
+            s  = 'targets are:        '
+            s += ' c: '
+            s += '%.2f' % q_data[0]
+            s += ' nu: '
+            s += '%.2f' % q_data[1]
+            print(s)
+            s  = 'initial guesses are:'
+            s += ' c: '
+            s += '%.2f' % c_0
+            s += ' nu: '
+            s += '%.2f' % nu
+            print(s)
+            s  = 'Gradient DJ (model) is:'
+            s += '( %.4f ,' % DJ[-2]
+            s += ' %.4f )' % DJ[-1]
+            print(s)
+        if  (objective=='MODEL') is False:
+            s  = 'ecart CI: '
+            s += '%.4f' % (np.linalg.norm(u0 + DJ[:n_x] - u_data))
+            print(s)
     #############################################################
     ############################################################
     # save
@@ -428,7 +446,7 @@ if 0:
 
 #
 # Plot the adjoint + solution
-if 0:
+if 1:
     def update_line(num, lambdas, U,V,x,line1,line2,line3,verbose = True):
         '''
         update the plot
@@ -450,6 +468,7 @@ if 0:
     plt.title('adjoint, burgers')
     plt.xlabel('x')
     plt.ylabel('$\lambda$,$u$')
+    plt.legend(['adjoint','u','data'])
     #
     plt.ion()
     #
