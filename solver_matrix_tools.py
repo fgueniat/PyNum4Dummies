@@ -1,5 +1,7 @@
 import numpy as np
+import weave
 from operators_matrix_tools import *
+
 '''
 library for solving burgers and easy 1d pde.
 contains 
@@ -16,15 +18,11 @@ Some operators already discretized are imported from operators_matrix_tools.
 
 '''
 
-param_n_ghost = 16
+param_n_ghost = 8
 
 
 
-
-
-
-
-
+acceleration_weave = True
 
 ##############################################################################################
 ##############################################################################################
@@ -36,13 +34,13 @@ param_n_ghost = 16
 
 
 
-def integration(u, x, t, dt, operators = None, rhs_forcing =None, method = 'RK4', bc_type = 'periodic', bcs = None, n_g = param_n_ghost, return_rhs = False, Full_Operator = None, return_operator = False):
+def integration(u, x, t, dt, operators = None, rhs_forcing =None, method = 'RK4', bc_type = 'periodic', bcs = None, n_g = param_n_ghost, return_rhs = False, full_operator = None, return_operator = False):
     '''
     bind to integration_forward_mat
     '''
-    return integration_forward_mat(u,x,t,dt, operators = operators, rhs_forcing = rhs_forcing, method = method, bc_type = bc_type, bcs = bcs,n_g = n_g, return_rhs = return_rhs, Full_Operator = Full_Operator, return_operator = return_operator)
+    return integration_forward_mat(u,x,t,dt, operators = operators, rhs_forcing = rhs_forcing, method = method, bc_type = bc_type, bcs = bcs,n_g = n_g, return_rhs = return_rhs, full_operator = full_operator, return_operator = return_operator)
 
-def integration_forward_mat(u, x, t, dt, operators = None, rhs_forcing = None, method = 'RK4', bc_type = 'periodic', bcs = None, n_g = param_n_ghost, return_rhs = False,Full_Operator=None, return_operator = False):
+def integration_forward_mat(u, x, t, dt, operators = None, rhs_forcing = None, method = 'RK4', bc_type = 'periodic', bcs = None, n_g = param_n_ghost, return_rhs = False,full_operator=None, return_operator = False):
     '''
     Integrate a problem.
     u is the quantity to solve
@@ -72,18 +70,18 @@ def integration_forward_mat(u, x, t, dt, operators = None, rhs_forcing = None, m
         rhs_forcing = lambda u,x,t,dt: np.zeros(x.size)    
     #
     if method == 'EF': #Euler
-        if Full_Operator is None:
-            Full_Operator = RHS_mat(u,x,t,dt,operators = operators)
+        if full_operator is None:
+            full_operator = RHS_mat(u,x,t,dt,operators = operators)
         #
-        A =  dt * Full_Operator
-        u = u + np.dot(Full_Operator,u) + dt * rhs_forcing(u,x,t,dt)
+        A =  dt * full_operator
+        u = u + full_operator.dot(u) + dt * rhs_forcing(u,x,t,dt)
     #
     if method == 'RK4':
-        if Full_Operator is None:
+        if full_operator is None:
             f = lambda u,t,p: np.dot( RHS_mat(u,p[0],t,p[1],operators = p[2]) ,u) + rhs_forcing(u,p[0],t,p[1])
             rhs = RK4(f, u, t, dt,p=[x,dt,operators]) #+ rhs_forcing(u,x,t,dt) 
         else: 
-            f = lambda u,t,p: np.dot(Full_Operator,u) +  rhs_forcing(u,p[0],t,p[1])
+            f = lambda u,t,p: full_operator.dot(u) +  rhs_forcing(u,p[0],t,p[1])
             rhs = RK4(f, u, t, dt,p=[x,dt]) #+ rhs_forcing(u,x,t,dt)
         #
         u = u+rhs
@@ -93,9 +91,9 @@ def integration_forward_mat(u, x, t, dt, operators = None, rhs_forcing = None, m
         u = (u,rhs)
     if return_operator is True:
         if return_rhs is True:
-            u = u + (Full_Operator,)
+            u = u + (full_operator,)
         else:
-            u = (u,Full_Operator)
+            u = (u,full_operator)
         #
     #
     #
@@ -144,28 +142,72 @@ def LUD_mat(a,u,x):
     u is the quantity to be discretized
     x is the space
     '''
-    A = np.zeros((u.size,u.size))
-    if np.isscalar(a):
-        ap = np.ones(u.shape) * np.maximum(-a,0)
-        am = np.ones(u.shape) * np.minimum(-a,0)
-    else:
-        ap = np.maximum(-a,0)
-        am = np.minimum(-a,0)
-    dx = (x[3:-1] - x[1:-3])/2.
-    dx = np.r_[dx[0],dx[0],dx,dx[-1],dx[-1]]
-    v = np.ones(u.shape)
-    # ui
-    A +=   np.diag( ap * 3. * v/(2.* dx) ) 
-    # ui-1
-    A += - np.diag( ap[1:] * 4. * v[:-1]/(2.* dx[1:]), -1 )
-    # ui-2
-    A +=   np.diag( ap[2:] * v[:-2]/(2.* dx[2:] ), -2 )
-    # ui
-    A += - np.diag( am * 3. * v/ (2.* dx ) ) 
-    # ui+1
-    A +=   np.diag( am[:-1] * 4. * v[:-1]/(2.* dx[:-1] ),1 )
-    # ui+2
-    A += - np.diag( am[:-2] * v[:-2]/(2.* dx[:-2] ), 2 )
+    nx = u.size
+    if acceleration_weave is False:
+        A = np.zeros((nx,nx))
+        if np.isscalar(a):
+            ap = np.ones(u.shape) * np.maximum(-a,0)
+            am = np.ones(u.shape) * np.minimum(-a,0)
+        else:
+            ap = np.maximum(-a,0)
+            am = np.minimum(-a,0)
+        dx = (x[3:-1] - x[1:-3])/2.
+        dx = np.r_[dx[0],dx[0],dx,dx[-1],dx[-1]]
+        v = np.ones(u.shape)
+        # ui
+        A +=   np.diag( ap * 3. * v/(2.* dx) ) 
+        # ui-1
+        A += - np.diag( ap[1:] * 4. * v[:-1]/(2.* dx[1:]), -1 )
+        # ui-2
+        A +=   np.diag( ap[2:] * v[:-2]/(2.* dx[2:] ), -2 )
+        # ui
+        A += - np.diag( am * 3. * v/ (2.* dx ) ) 
+        # ui+1
+        A +=   np.diag( am[:-1] * 4. * v[:-1]/(2.* dx[:-1] ),1 )
+        # ui+2
+        A += - np.diag( am[:-2] * v[:-2]/(2.* dx[:-2] ), 2 )
+    else: # use weave
+        A = np.zeros((nx,nx))
+        if np.isscalar(a):
+            ap = np.ones(u.shape) * np.maximum(-a,0)
+            am = np.ones(u.shape) * np.minimum(-a,0)
+        else:
+            ap = np.maximum(-a,0)
+            am = np.minimum(-a,0)        
+        dx = np.zeros(nx)
+        code = '''            
+            /* dx */
+            for (int i=2;i<nx-2;i++){
+                dx(i) = ( x(i+1) - x(i-1) )/ 2. ;
+                }
+            dx(1) = dx(2) ;
+            dx(0) = dx(1) ;
+            dx(nx-2) = dx(nx-3) ;
+            dx(nx-1) = dx(nx-2) ;
+
+            /* diag */
+            for (int i=0;i<nx;i++){
+                A(i,i) = ap(i) * 3. / ( 2. * dx(i) ) - am(i) * 3. / ( 2. * dx(i) ) ;
+                }
+
+            /* offset 1 */
+            for (int i=1;i<nx;i++){
+                /* diag -1 */
+                A(i,i-1) = - ap(i) * 4. / ( 2.*dx(i) ) ;
+                /* diag +1 */
+                A(i-1,i) =  am(i-1) * 4. / ( 2.*dx(i-1) ) ;
+                }
+
+            /* offset 2 */
+            for (int i=2;i<nx;i++){
+                /* diag -2 */
+                A(i,i-2) = ap(i) / ( 2.*dx(i) ) ;
+                /* diag +2 */
+                A(i-2,i) =  -am(i-2) / ( 2.*dx(i-2) ) ;
+                }
+            '''
+        weave.inline(code,['A','nx','am','ap','dx','x'],type_converters=weave.converters.blitz)
+        #A = -LUD_mat(a,u,x)
     return -A
 
 def diffusion_mat(u,x):
@@ -175,18 +217,76 @@ def diffusion_mat(u,x):
     u is the quantity to be discretized
     x is the space
     '''
-    d2udx2 = np.zeros(u.shape)
-    A = np.zeros((u.size,u.size))
+    nx = u.size
+    d2udx2 = np.zeros(nx)
+    A = np.zeros((nx,nx))
+    if acceleration_weave is False: 
+        dx = (x[2:] - x[:-2])/2.
+        dx = np.r_[dx[0],dx,dx[-1]]
+        v = np.ones(u.shape) / (2. * dx**2)
+        #ui-1
+        A += np.diag(v[1:],-1) 
+        #ui
+        A += -2.*np.diag(v) 
+        #ui+1
+        A += np.diag(v[1:], 1)
+    else:
+        A = np.zeros((nx,nx))
+        dx = np.zeros(nx)
+        code = '''            
+            /* dx */
+            for (int i=1;i<nx-1;i++){
+                dx(i) = ( x(i+1) - x(i-1) )/ 2. ;
+                }
+            dx(0) = dx(1) ;
+            dx(nx-1) = dx(nx-2) ;
+
+            /* diag */
+            for (int i=0;i<nx;i++){
+                A(i,i) = -1. / ( dx(i) * dx(i) ) ;
+                }
+
+            /* offset 1 */
+            for (int i=1;i<nx;i++){
+                /* diag -1 */
+                A(i,i-1) = 1. / ( 2.*dx(i) * dx(i) ) ;
+                /* diag +1 */
+                A(i-1,i) =  1. / ( 2.*dx(i-1) * dx(i-1) ) ;
+                }
+
+            '''
+        weave.inline(code,['A','nx','dx','x'],type_converters=weave.converters.blitz)
+        #A = diffusion_mat(u,x,False)
+
+    return A
+
+
+
+def dxxx_mat(u,x):
+    '''
+    discretization of $ \frac{\partial^3 u} \{partial x^2} $ 
+    central difference scheme scheme:  $ \frac{\partial^3 u_i} \{partial x^2}  \approx \frac {u_{i+2} - u_{i-2} +2 u_{i-1} - 2u_{i+1}}{2\Delta x^3}
+    u is the quantity to be discretized
+    x is the space
+    '''
+    nx = u.size
+    d2udx2 = np.zeros(nx)
+    A = np.zeros((nx,nx))
     dx = (x[2:] - x[:-2])/2.
     dx = np.r_[dx[0],dx,dx[-1]]
-    v = np.ones(u.shape) / (2. * dx**2)
+    v = np.ones(u.shape) / (2. * dx**3)
+    #ui-2
+    A += - np.diag(v[1:-1],-2) 
     #ui-1
-    A += np.diag(v[1:],-1) 
+    A += 2.* np.diag(v[1:],-1) 
     #ui
-    A += -2.*np.diag(v) 
     #ui+1
-    A += np.diag(v[1:], 1) 
+    A += -2.* np.diag(v[1:], 1)
+    #ui+2
+    A += np.diag(v[1:-1], 2)
+
     return A
+
 
 
 
@@ -236,10 +336,11 @@ def RHS_mat_adjoint(lambda_,u,x,t,dt,operators = None ):
         A += operator(lambda_,u,x,t,dt)
     return A
 
+        
 
 
 
-def integration_backward_mat(lambda_,u, x, t, dt, p_forcing=None, operators = None, rhs_forcing = None, method = 'RK4', bc_type = 'periodic', bcs = None, n_g = param_n_ghost, return_rhs = False,Full_Operator=None, return_operator = False):
+def integration_backward_mat(lambda_,u, x, t, dt, p_forcing=None, operators = None, rhs_forcing = None, method = 'RK4', bc_type = 'periodic', bcs = None, n_g = param_n_ghost, return_rhs = False,full_operator=None, return_operator = False):
     '''
     Integrate the adjoint problem.
     lambda_ is the quantity to solve
@@ -266,41 +367,42 @@ def integration_backward_mat(lambda_,u, x, t, dt, p_forcing=None, operators = No
         return -1
     #
     lambda_,_ = ghost(lambda_,x,bc_type = bc_type,bcs = bcs)
-    if p_forcing is not None:p_forcing,_ = ghost(p_forcing,x,bc_type = bc_type,bcs = bcs)
+    if p_forcing is not None :p_forcing,_ = ghost(p_forcing,x,bc_type = bc_type,bcs = bcs)
     u,x = ghost(u,x,bc_type = bc_type,bcs = bcs)
     #
-    if rhs_forcing is None: 
+    if rhs_forcing is None : 
         rhs_forcing = lambda u,x,t,dt,p: np.zeros(x.size)
     #
     if method == 'EF': #Euler. Not working ?
-        if Full_Operator is None:
-            Full_Operator = RHS_mat_adjoint(lambda_,u,x,t,dt,operators = operators)
+        if full_operator is None :
+            full_operator = RHS_mat_adjoint(lambda_,u,x,t,dt,operators = operators)
         #
-        A = np.eye(lambdas_.size) + dt * Full_Operator
-        lambda_ = np.dot(Full_Operator,lambda_) + dt * rhs_forcing(lambda_,u,x,t,dt)
+        A = np.eye(lambdas_.size) + dt * full_operator
+        lambda_ = np.dot(full_operator,lambda_) + dt * rhs_forcing(lambda_,u,x,t,dt)
     #
     #
     if method == 'RK4':
-        if Full_Operator is None:
+        if full_operator is None:
             f = lambda lambda_,t,p: np.dot( RHS_mat_adjoint(lambda_,p[0],p[1],t,p[2],operators = p[3]) ,lambda_) +  rhs_forcing(lambda_,p[0],p[1],t,p[2],p[4])
             rhs = RK4(f, lambda_, t, dt,p=[u,x,dt,operators,p_forcing])# - rhs_forcing(lambda_,u,x,t,dt,p_forcing)/4.
 
-        else: 
-            f = lambda lambda_,t,p: np.dot(Full_Operator,lambda_) +  rhs_forcing(lambda_,p[0],p[1],t,p[2],p[3])
+        else : 
+            f = lambda lambda_,t,p: np.dot(full_operator,lambda_) +  rhs_forcing(lambda_,p[0],p[1],t,p[2],p[3])
             rhs = RK4(f, lambda_, t, dt,p=[u,x,dt,p_forcing]) #- rhs_forcing(lambda_,u,x,t,dt,p_forcing)/4.
         #
+        #if is_diffusion is True : rhs = limit_fluct(rhs) # TO BE IMPLEMENTED WHEN DIFFUSION IS PRESENT. SEE WITH AVEUH
         lambda_ = lambda_ + rhs
     lambda_,_ = deghost(lambda_,x,n_g = n_g)
     if p_forcing is not None: p,_ = deghost(p_forcing,x,n_g = n_g)
     u,x = deghost(u,x,n_g=n_g)
     #
-    if return_rhs is True:
+    if return_rhs is True :
         lambda_ = (lambda_,rhs)
-    if return_operator is True:
-        if return_rhs is True:
-            lambda_ = lambda_ + (Full_Operator,)
-        else:
-            lambda_ = (lambda_,Full_Operator)
+    if return_operator is True :
+        if return_rhs is True :
+            lambda_ = lambda_ + (full_operator,)
+        else :
+            lambda_ = (lambda_,full_operator)
         #
     #
     #
@@ -316,7 +418,7 @@ def lambda2mu(lambda0,dug, dupF):
     '''
     pass
 
-def gradient_q(u0,U,lambdas,data,x,time,q,dqj,dqf,dqg,mu) :
+def gradient_q(u0,U,lambdas,data,x,time,q,dqj,dqf,dqg,mu,desample=1) :
     '''
     Final integration for the gradient:
     $ D_q = \int_0-^T \partial_q j  + \lambda^T \partial_q F dt + \mu^T \partial_q g $
@@ -328,30 +430,58 @@ def gradient_q(u0,U,lambdas,data,x,time,q,dqj,dqf,dqg,mu) :
     '''
     #
     n_q = len(q)
+    n_t = len(time)
     #
     DJ = np.zeros(n_q)
+    #
+    #########################################################################
+    # part $\int_0-^T \partial_q j  + \lambda^T \partial_q F dt$
+    for i_t,t in enumerate(time) :
+        if desample > 1 :
+            is_sampled = False
+            if i_t%desample == 0 : is_sampled = True
+            if i_t == n_t-1 : is_sampled = True
+        else : 
+            is_sampled = True
+        #
+        if is_sampled is True :
+            if i_t == n_t-1 :
+                dt = (time[-1] - time[-2])
+            elif i_t == 0 :
+                dt = (time[1] - time[0])
+            else :
+                dt = 0.5 * (time[i_t+1] - time[i_t-1])
+            #
+            for i_q in range(n_q) :
+                delta_dj =  dt * dqj[i_q]( U, data, x, (i_t,t), q )
+                # the sum accelerate if dqf is a 0. instead of an operator
+                delta_dj +=  dt * np.sum( 
+                                    np.dot( 
+                                    lambdas[i_t].T , 
+                                    dqf[i_q]( U, x, (i_t,t), q ) 
+                                    )
+                                    )
+                #
+                DJ[i_q] += delta_dj
+                #
+            #
+        #
+    #
+    if desample>1 : # interpolate
+        from scipy.interpolate import interp1d as interp
+        x,y = [],[]
+        for i_q in range(n_q) :
+            if np.abs(DJ[i_q])>1.e-10 :
+                x.append(i_q)
+                y.append(DJ[i_q])
+        f = interp(x,y,kind = 'cubic')
+        DJ = f(np.arange(n_q))
+    #
+    #########################################################################
     # part $\mu^T \partial_q g$
     for i_q in range(n_q) :
         dqg_i = dqg[i_q](u0,q)
         DJ[i_q] += np.dot(mu.T,dqg_i)
-    #
-    # part $\int_0-^T \partial_q j  + \lambda^T \partial_q F dt$
-    for i_t,t in enumerate(time) :
-        if i_t == len(time)-1 :
-            dt = 0.5 * (time[-1] - time[-2])
-        elif i_t == 0 :
-            dt = 0.5 * (time[1] - time[0])
-        else :
-            dt = 0.5 * (time[i_t+1] - time[i_t-1])
-        #
-        for i_q in range(n_q) :
-            DJ[i_q] += dt * dqj[i_q]( U, data, x, (i_t,t), q )
-            DJ[i_q] += dt * np.dot( 
-                                lambdas[i_t].T , 
-                                dqf[i_q]( U, x, (i_t,t), q ) 
-                                )
-            #
-        #
     return DJ
 
 

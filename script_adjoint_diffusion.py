@@ -292,15 +292,17 @@ if 0:
 ##################################################
 #
 #
-def update_line(num, lambdas, U,V,x,line1,line2,line3,verbose = True):
+def update_line(num, lambdas, U,V,x,line1,line2,line3,title):
     '''
     update the plot
     '''
+    title_text = 'time: %.2f' %time[num]
+    title_text += ' over %.2f' %time[-1]
     line1.set_data(x,lambdas[len(lambdas)-1-num]+.01)
     line2.set_data(x,U[num])
     line3.set_data(x,V[num])
-    if verbose is True: print 'time at t_',num,' : ',t_sampled[num]
-    return line1,line2,line3
+    title.set_text(title_text)
+    return line1,line2,line3,title,
 
 #
 fig3, ax3 = plt.subplots()
@@ -308,6 +310,7 @@ fig3, ax3 = plt.subplots()
 line21, = ax3.plot([], [], 'r-')
 line22, = ax3.plot([], [], 'k-')
 line23, = ax3.plot([], [], 'g-')
+title_time = ax3.text(0.5,.95, "", bbox={'facecolor':'w', 'alpha':0.5, 'pad':5}, transform=ax.transAxes, ha="center")
 plt.xlim(x.min(),x.max())
 plt.ylim(lambdas[0].min()-1, lambdas[0].max()+1)
 plt.title('adjoint, burgers')
@@ -316,7 +319,7 @@ plt.ylabel('$\lambda$,$u$')
 #
 plt.ion()
 #
-line_ani = animation.FuncAnimation(fig3, update_line, xrange(ind_plot_start,ind_plot_end,n_plot_skip), fargs=(lambdas,U,U_target,x,line21,line22,line23),
+line_ani = animation.FuncAnimation(fig3, update_line, xrange(ind_plot_start,ind_plot_end,n_plot_skip), fargs=(lambdas,U,U_target,x,line21,line22,line23,titlet),
                                    interval=100, blit=True)
 
 #

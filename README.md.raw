@@ -36,6 +36,7 @@ Other functions will be implemented, to derive reduced order models (ROM) of the
 
 ### The scripts
 The various scripts illustrate the use of the library:
+* `script_optimal_control.py` - optimal control: it identifies the forcing so the solution matches a criterion
 * `script_assimilation.py` - data assimilation (model and/or CI)
 * `script_advection.py` - advection equation
 * `script_test_accuracy.py` - test the accuracy of the solver
@@ -49,10 +50,11 @@ The various scripts illustrate the use of the library:
 - [x] add adjoint
 - [x] add assimilation
 - [x] add optimal control
-- [ ] Bug in OC: $lambdas$ are unstable on BC with dirichlet 
+- [x] Bug in OC: $lambdas$ are unstable on BC with dirichlet 
 - [ ] stencils for the pre-written adjoint adjoint ? 
-- [ ] advection: instabilities in LUD when too stiff ? Flux limiter ?
-- [ ] add $\partial_{xxx}$/ $\partial_{xxxx}$ for KdW or Kuramoto–Sivashinsky equations ?
+- [x] advection: instabilities in LUD when too stiff ? Flux limiter ?
+- [x] add $\partial_{xxx}$/ $\partial_{xxxx}$ for KdW or Kuramoto–Sivashinsky equations ?
+- [] but instable like diffusivity ?
 
 # Explanations
 ## Provided discretization schemes

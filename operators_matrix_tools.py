@@ -61,3 +61,20 @@ def operator_diffusion_adjoint(lambda_,u,x,t,dt,p=1):
     '''
     return  p*st.diffusion_mat(lambda_,x)
 
+def operator_dxxx(u,x,t,dt,p=1):
+    '''
+    this operator O is the RHS part of the advection term:
+    O(u,x,t) = d^3u/dx^3
+    It uses the dxxx_mat function from solver_tools
+    '''
+    return  p*st.dxxx_mat(u,x)
+
+def operator_dxxx_adjoint(lambda_,u,x,t,dt,p=1):
+    '''
+    this adjoint operator O is the RHS part of the advection term:
+    O(lambda,u,x,t) = d^3lambda/dx^3
+    It uses the dxxx_mat function from solver_tools
+    '''
+    return  -p*st.dxxx_mat(lambda_,x)
+
+
