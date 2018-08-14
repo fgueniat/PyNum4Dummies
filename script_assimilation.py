@@ -22,6 +22,70 @@ This data is used either for:
     v/ goes to i/
 
 '''
+###############################3
+#### Generating smooth noise
+
+def perlin(x,y=None,seed=0):
+    '''
+    Perlin noise is a smooth noise.
+    '''
+    #
+    if y is not None :
+        if x.ndim ==1 & y.ndim ==1 :
+            xx,yy = np.meshgrid(x,y)
+        else :
+            if x.ndim == y.ndim:
+                xx = x.copy()
+                yy = y.copy()
+            else : #graceful exit
+                print('x and y do not have the same dimensions')
+                return -1
+    else:
+        y_ = np.array([0,1])
+        xx,yy = np.meshgrid(x,y_)
+    # permutation table
+    np.random.seed(seed)
+    p = np.arange(256,dtype=int)
+    np.random.shuffle(p)
+    p = np.stack([p,p]).flatten()
+    # coordinates of the top-left
+    xi = xx.astype(int)
+    yi = yy.astype(int)
+    # internal coordinates
+    xf = xx - xi
+    yf = yy - yi
+    # fade factors
+    u = fade_perlin(xf)
+    v = fade_perlin(yf)
+    # noise components
+    n00 = gradient_perlin(p[p[xi]+yi],xf,yf)
+    n01 = gradient_perlin(p[p[xi]+yi+1],xf,yf-1)
+    n11 = gradient_perlin(p[p[xi+1]+yi+1],xf-1,yf-1)
+    n10 = gradient_perlin(p[p[xi+1]+yi],xf-1,yf)
+    # combine noises
+    x1 = lerp_perlin(n00,n10,u)
+    x2 = lerp_perlin(n01,n11,u) # FIX1: I was using n10 instead of n01
+    if y is None : # 1d
+        return lerp_perlin(x1,x2,v)[0] # FIX2: I also had to reverse x1 and x2 here
+    else :
+        return lerp_perlin(x1,x2,v)
+
+def lerp_perlin(a,b,x):
+    "linear interpolation"
+    return a + x * (b-a)
+
+def fade_perlin(t):
+    "6t^5 - 15t^4 + 10t^3"
+    return 6 * t**5 - 15 * t**4 + 10 * t**3
+
+def gradient_perlin(h,x,y):
+    "grad converts h to the right gradient vector and return the dot product with (x,y)"
+    vectors = np.array([[0,1],[0,-1],[1,0],[-1,0]])
+    g = vectors[h%4]
+    return g[:,:,0] * x + g[:,:,1] * y
+
+
+
 
 ##################################################
 ##################################################
@@ -31,10 +95,11 @@ This data is used either for:
 
 # Data Assimilation objective:
 objectives = ['CI and MODEL','MODEL','CI']
-objective = objectives[0]
-
+objective = objectives[2]
+is_adv,is_nl_adv,is_diff,is_dxxx = True,True,False,False
+if is_diff is True : print('INFOS: backward integration is unstable')
 # parameters for the minimization
-n_adj_max = 20
+n_adj_max = 15
 eps_DJ = 1.e-7
 eps_delta_DJ = 1.e-6
 
@@ -42,13 +107,13 @@ eps_delta_DJ = 1.e-6
 integration_method = 'RK4'
 
 # physics
-if objective == 'CI':
-    q_physics= [6.5 , 0.45]
-else:
-    q_physics= [7.2 , 0.35]
+q_physics= [7.2 , 0.35]
 
 #
-q_data = [6.5,  0.45]
+if objective == 'CI':
+    q_data = q_physics
+else :
+    q_data = [6.5,0.45]
 c_0,nu = q_physics[0],q_physics[1]
 c_data,nu_data = q_data[0],q_data[1]
 
@@ -59,7 +124,7 @@ x = np.linspace(xmin,xmax,n_x)
 
 # time
 t0,dt = 0., 0.005
-tmax = 0.5
+tmax = 10.1
 n_it = int(tmax/dt)
 time = t0 + dt*np.arange(n_it)
 
@@ -71,13 +136,16 @@ u0_init += u_background
 
 # Data
 if objective == 'CI' or objective == 'CI and MODEL':
-    s_dev2_data, mu_offset_data = .2, 1.
-    u_background_data = 0.
-    u_data  = np.exp(- (x-mu_offset_data)**2 / (2. * s_dev2_data) ) / np.sqrt(2. * np.pi * s_dev2_data)
-    u_data += u_background_data
+    s_dev2_data, mu_offset_data = 3., 1.
+    #u_background_data = 0.
+    #u_data  = np.exp(- (x-mu_offset_data)**2 / (2. * s_dev2_data) ) / np.sqrt(2. * np.pi * s_dev2_data)
+    #u_data += u_background_data
+    u_data  = u_background + perlin(np.linspace(0,5,n_x),seed=10) * np.exp(- (x)**2 / (2. * s_dev2_data) )
+
     #u_data = np.sin(2.*np.pi*x) #for an harder problem
 else: # if CI are similar
     u_data = u0_init.copy()
+
 
 # parameters
 if objective == 'MODEL':
@@ -135,12 +203,19 @@ def rhs_adjoint(lambda_,u,x,t,dt,p):
 operator_advection_data         = lambda u,x,t,dt: st.operator_advection(u,x,t,dt,p=c_data)
 operator_NL_advection_data      = lambda u,x,t,dt: st.operator_NL_advection(u,x,t,dt,p=1.)
 operator_diffusion_data         = lambda u,x,t,dt: st.operator_diffusion(u,x,t,dt,p=nu_data)        # 
+operator_dxxx_data              = lambda u,x,t,dt: st.operator_dxxx(u,x,t,dt,p=nu_data)        # 
 #
-operators_data = [
-                    operator_advection_data,
-                    #operator_NL_advection_data,
-                    operator_diffusion_data,
-                ]
+    #  Construction of the operators:
+operators_data = []
+if is_adv is True :
+    operators_data += [operator_advection_data]
+if is_nl_adv is True :
+    operators_data += [operator_NL_advection_data]
+if is_diff is True :
+    operators_data += [operator_diffusion_data]
+if is_dxxx is True:
+    operators_data += [operator_dxxx_data]
+
 
 
 
@@ -216,25 +291,30 @@ for i_adjoint in range(n_adj_max):
     #  Construction and update of individual operators:
     operator_advection              = lambda u,x,t,dt: st.operator_advection(u,x,t,dt,p=c_0)
     operator_NL_advection           = lambda u,x,t,dt: st.operator_NL_advection(u,x,t,dt,p=1.)
-    operator_diffusion              = lambda u,x,t,dt: st.operator_diffusion(u,x,t,dt,p=nu)    
+    operator_diffusion              = lambda u,x,t,dt: st.operator_diffusion(u,x,t,dt,p=nu)
+    operator_dxxx                   = lambda u,x,t,dt: st.operator_dxxx(u,x,t,dt,p=1.)
+    #
     operator_advection_adjoint      = lambda lambda_,u,x,t,dt: st.operator_advection_adjoint(lambda_,u,x,t,dt,p=c_0)
     operator_NL_advection_adjoint   = lambda lambda_,u,x,t,dt: st.operator_NL_advection_adjoint(lambda_,u,x,t,dt,p=1.)
     operator_diffusion_adjoint      = lambda lambda_,u,x,t,dt: st.operator_diffusion_adjoint(lambda_,u,x,t,dt,p=nu)  
+    operator_dxxx_adjoint           = lambda lambda_,u,x,t,dt: st.operator_dxxx_adjoint(lambda_,u,x,t,dt,p=1.)
     #
     ########
     #  Construction of the operators:
-    operators = [
-                    operator_advection,
-                    #operator_NL_advection,
-                    operator_diffusion,
-                ]
-    #
-    #
-    operators_adjoint = [
-                    operator_advection_adjoint,
-                    #operator_NL_advection_adjoint,
-                    operator_diffusion_adjoint,
-                ]
+    operators = []
+    operators_adjoint = []
+    if is_adv is True :
+        operators += [operator_advection]
+        operators_adjoint += [operator_advection_adjoint]
+    if is_nl_adv is True :
+        operators += [operator_NL_advection]
+        operators_adjoint += [operator_NL_advection_adjoint]
+    if is_diff is True :
+        operators += [operator_diffusion]
+        operators_adjoint += [operator_diffusion_adjoint]
+    if is_dxxx is True :
+        operators += [operator_dxxx]
+        operators_adjoint += [operator_dxxx_adjoint]
     #
     #
     ##################################################
@@ -258,6 +338,8 @@ for i_adjoint in range(n_adj_max):
             U.append(u.copy())
             t_sampled.append(time[i_t])
         #
+    if i_adjoint == 0:
+        U_data_init = [u.copy() for u in U]
     #
     #
     ##################################################
@@ -447,36 +529,96 @@ if 0:
 #
 # Plot the adjoint + solution
 if 1:
-    def update_line(num, lambdas, U,V,x,line1,line2,line3,verbose = True):
-        '''
-        update the plot
-        '''
-        line1.set_data(x,lambdas[num]+.01)
-        line2.set_data(x,U[num])
-        line3.set_data(x,V[num])
-        if verbose is True: print 'time at t_',num,' : ',t_sampled[num]
-        return line1,line2,line3
+
     #
     #
     fig3, ax3 = plt.subplots()
     #
     line21, = ax3.plot([], [], 'r-')
     line22, = ax3.plot([], [], 'k-')
-    line23, = ax3.plot([], [], 'g-')
+    line23, = ax3.plot([], [], 'k--')
+    line24, = ax3.plot([], [], 'g-')
+    title_time = ax3.text(0.5,
+            .95, "", bbox={'facecolor':'w', 'alpha':0.5, 'pad':5}, transform=ax3.transAxes, ha="center")
     plt.xlim(x.min(),x.max())
     plt.ylim(lambdas[0].min()-1, lambdas[0].max()+1)
     plt.title('adjoint, burgers')
     plt.xlabel('x')
     plt.ylabel('$\lambda$,$u$')
-    plt.legend(['adjoint','u','data'])
+    plt.legend(['adjoint','u','u_init','data'])
     #
     plt.ion()
     #
-    line_ani = animation.FuncAnimation(fig3, update_line, xrange(ind_plot_start,ind_plot_end,n_plot_skip), fargs=(lambdas,U,U_data,x,line21,line22,line23),
-                                       interval=100, blit=True)
+    def update_line(num, lambdas, U,U_init,V,x,line1,line2,line3,line4,title):
+        '''
+        update the plot
+        '''
+        title_text = 'time: %.2f' %(time[num])
+        title_text += ' over %.2f' %(time[-1])
+        line1.set_data(x,lambdas[num]+.01)
+        line2.set_data(x,U[num])
+        line3.set_data(x,U_init[num])
+        line4.set_data(x,V[num])
+        title.set_text(title_text)
+        mmax,mmin = np.max([U[num],lambdas[num]]),np.min([U[num],lambdas[num]])
+        ax3.set_ylim(mmin,mmax)
+        return line1,line2,line3,line4,title,
+    line_ani = animation.FuncAnimation(fig3, update_line, xrange(ind_plot_start,ind_plot_end,n_plot_skip), fargs=(lambdas,U,U_data_init,U_data,x,line21,line22,line23,line24,title_time),
+                                       interval=100, blit=False)
     #
     #
+    line_ani.running=True
+    # This function will toggle pause on mouse click events
+    def on_click(event):
+        if line_ani.running == True :
+            line_ani.event_source.stop()
+            line_ani.running = False
+        else:
+            line_ani.event_source.start()    
+            line_ani.running = True
+    #
+    # Here we tell matplotlib to call on_click if the mouse is pressed
+    cid = fig3.canvas.mpl_connect('button_press_event', on_click)
     plt.show()
+
+# Plot the adjoint + solution
+if 0 :
+    if objective != 'MODEL':
+        #
+        fig4, ax4 = plt.subplots()
+        #
+        line41, = ax4.plot([], [], 'r-')
+        line42, = ax4.plot([], [], 'k-')
+        title_time = ax4.text(0.5,
+            .95, "", bbox={'facecolor':'w', 'alpha':0.5, 'pad':5}, transform=ax4.transAxes, ha="center")
+        plt.xlim(x.min(),x.max())
+        ax4.set_ylim(lambdas[0].min(), lambdas[0].max())
+        def update_line(num, lambdas,U,u0,x,line1,line2,title):
+            '''
+            update the plot
+            '''
+            title_text = 'iteration: %.0f' %num
+            title_text += ' over %.0f' %n_adj_max
+            line1.set_data(x,lambdas[num])
+            line2.set_data(x,U[num]-u0)
+            ax4.set_ylim((U[num]-u0).min(),(U[num]-u0).max())
+            title.set_text(title_text)
+            return line1,line2,title,
+        #
+        plt.title('adjoint, burgers')
+        plt.xlabel('x')
+        plt.ylabel('$\lambda$,$u$')
+        plt.legend(['adjoint','$u_i-u_d$'])
+        #
+        plt.ion()
+        #
+        line_ani = animation.FuncAnimation(fig4, update_line, xrange(0,n_adj_max), fargs=(lambdas_s,u0s,u_data,x,line41,line42,title_time),
+                                           interval=300, blit=False)
+        #
+        #
+        plt.show()
+
+
 
 
 
