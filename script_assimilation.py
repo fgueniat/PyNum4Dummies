@@ -35,9 +35,10 @@ This data is used either for:
 objectives = ['CI and MODEL','MODEL','CI']
 objective = objectives[0]
 is_adv,is_nl_adv,is_diff,is_dxxx = True,False,True,False
+use_noise = True
 if is_diff is True : print('INFOS: backward integration is unstable with viscosity')
 # parameters for the minimization
-n_adj_max = 120
+n_adj_max = 55
 eps_DJ = 1.e-7
 eps_delta_DJ = 1.e-6
 
@@ -61,8 +62,13 @@ xmin,xmax = -5.,5.
 x = np.linspace(xmin,xmax,n_x)
 
 # time
-t0,dt = 0., 0.0005
-tmax = .25
+t0 = 0.
+if is_diff is True : 
+    dt = 0.0005
+    tmax = .25 
+else :
+    dt = 0.001
+    tmax = 1.
 n_it = int(tmax/dt)
 time = t0 + dt*np.arange(n_it)
 
@@ -74,14 +80,14 @@ u0_init += u_background
 
 # Data
 if objective == 'CI' or objective == 'CI and MODEL':
+    u_background_data = 0.
     s_dev2_data, mu_offset_data = 3., 1.
-    #u_background_data = 0.
-    #u_data  = np.exp(- (x-mu_offset_data)**2 / (2. * s_dev2_data) ) / np.sqrt(2. * np.pi * s_dev2_data)
-    #u_data += u_background_data
-    u_data  = u_background + perlin(np.linspace(0,5,n_x),seed=10) * np.exp(- (x)**2 / (2. * s_dev2_data) )
-
-    #u_data = np.sin(2.*np.pi*x) #for an harder problem
-else: # if CI are similar
+    if use_noise is True :
+        u_data  = u_background + perlin(np.linspace(0,5,n_x),seed=10) * np.exp(- (x)**2 / (2. * s_dev2_data) )
+    else :
+        u_data  = np.exp(- (x-mu_offset_data)**2 / (2. * s_dev2_data) ) / np.sqrt(2. * np.pi * s_dev2_data)
+        u_data += u_background_data
+else : # if CI are similar
     u_data = u0_init.copy()
 
 
@@ -194,48 +200,10 @@ for i_t in xrange(n_it):
 
 
 
-for i_adjoint in range(n_adj_max):
-    if i_adjoint >0 :
-        learning_factor_ci = 2./(1.+(1.*i_adjoint)**.1)
-        learning_factor_model = 50./(1.+(1.*i_adjoint)**.1)
-    else :
-        learning_factor_ci = 1.
-        learning_factor_model = 1.
-    #
-    if i_adjoint>1:
-        if np.linalg.norm(DJ)<eps_DJ:
-            print('gradient is small: break')
-            break
-    if i_adjoint>2:
-        if np.linalg.norm(gradients[-1] - gradients[-2]) < eps_delta_DJ:
-            print('gradient update is small: break')
-            break
-    ## update model:
-    # update all parameters with the gradient
-    if objective == 'MODEL' :
-        q = q + 1.*DJ*learning_factor_model
-    if objective == 'CI' :
-        q = q + 1.*DJ*learning_factor_ci
-    if objective == 'CI and MODEL' :
-        q[0:n_x] = q[0:n_x] + 1.*DJ[0:n_x]*learning_factor_ci
-        q[-2:] = q[-2:] + 1.*DJ[-2:]*learning_factor_model
-    #
-    # update model parameters
-    if objective == 'CI':
-        c_0,nu = q_physics[0],q_physics[1]
-    else:
-        limiters(q,-2,10.)
-        limiters(q,-1,1.,.1)
-        c_0,nu = q[-2],q[-1]
-    #
-    # update initial conditions:
-    if objective == 'CI' or objective == 'CI and MODEL':
-        for i_x in range(n_x): limiters(q,i_x,10.)
-        u0 = q[:n_x]
-    else:
-        u0 = u0_init
-    #
-    #
+def physics(c_0,nu,u0):
+    '''
+    # Compute the solution of the model.
+    '''
     ##################################################
     # define the equation for the model:
     ##################################################
@@ -245,27 +213,17 @@ for i_adjoint in range(n_adj_max):
     operator_diffusion              = lambda u,x,t,dt: st.operator_diffusion(u,x,t,dt,p=nu)
     operator_dxxx                   = lambda u,x,t,dt: st.operator_dxxx(u,x,t,dt,p=1.)
     #
-    operator_advection_adjoint      = lambda lambda_,u,x,t,dt: st.operator_advection_adjoint(lambda_,u,x,t,dt,p=c_0)
-    operator_NL_advection_adjoint   = lambda lambda_,u,x,t,dt: st.operator_NL_advection_adjoint(lambda_,u,x,t,dt,p=1.)
-    operator_diffusion_adjoint      = lambda lambda_,u,x,t,dt: st.operator_diffusion_adjoint(lambda_,u,x,t,dt,p=nu)  
-    operator_dxxx_adjoint           = lambda lambda_,u,x,t,dt: st.operator_dxxx_adjoint(lambda_,u,x,t,dt,p=1.)
-    #
     ########
     #  Construction of the operators:
     operators = []
-    operators_adjoint = []
     if is_adv is True :
         operators += [operator_advection]
-        operators_adjoint += [operator_advection_adjoint]
     if is_nl_adv is True :
         operators += [operator_NL_advection]
-        operators_adjoint += [operator_NL_advection_adjoint]
     if is_diff is True :
         operators += [operator_diffusion]
-        operators_adjoint += [operator_diffusion_adjoint]
     if is_dxxx is True :
         operators += [operator_dxxx]
-        operators_adjoint += [operator_dxxx_adjoint]
     #
     #
     ##################################################
@@ -288,15 +246,43 @@ for i_adjoint in range(n_adj_max):
         if i_t%n_save == 0:#save only one solution every n_save 
             U.append(u.copy())
             t_sampled.append(time[i_t])
-        #
-    if i_adjoint == 0:
-        U_data_init = [u.copy() for u in U]
-    #
-    #
+        #    return 
+    return U,t_sampled
+
+
+def adjoint(c_0,nu,u0,U_data,U=None):
+    '''
+    # Compute the adjoint states
+    '''
+    if objective == 'CI':
+        q = u0.copy()
+    if objective == 'MODEL':
+        q = [c_0,nu]
+    if objective == 'CI and MODEL' :
+        q = np.r_[u0.copy(),np.array([c_0,nu])]
+    if U is None:
+        U,_ = physics(c_0,nu,u0)
     ##################################################
-    # Compute the gradient
+    # define the equation for the model:
     ##################################################
-    # initialize lambda
+    #  Construction and update of individual operators:
+    operator_advection_adjoint      = lambda lambda_,u,x,t,dt: st.operator_advection_adjoint(lambda_,u,x,t,dt,p=c_0)
+    operator_NL_advection_adjoint   = lambda lambda_,u,x,t,dt: st.operator_NL_advection_adjoint(lambda_,u,x,t,dt,p=1.)
+    operator_diffusion_adjoint      = lambda lambda_,u,x,t,dt: st.operator_diffusion_adjoint(lambda_,u,x,t,dt,p=nu)  
+    operator_dxxx_adjoint           = lambda lambda_,u,x,t,dt: st.operator_dxxx_adjoint(lambda_,u,x,t,dt,p=1.)
+    #
+    ########
+    #  Construction of the operators:
+    operators_adjoint = []
+    if is_adv is True :
+        operators_adjoint += [operator_advection_adjoint]
+    if is_nl_adv is True :
+        operators_adjoint += [operator_NL_advection_adjoint]
+    if is_diff is True :
+        operators_adjoint += [operator_diffusion_adjoint]
+    if is_dxxx is True :
+        operators_adjoint += [operator_dxxx_adjoint]
+    #
     lambda0 = np.zeros(n_x)
     # lambda
     if 1:
@@ -319,15 +305,31 @@ for i_adjoint in range(n_adj_max):
     #
     # integration was backward: reordering terms
     lambdas = lambdas[::-1]
+    return lambdas
+
+def gradient(c_0,nu,u0,U_data,U = None, lambdas = None):
+    '''
+    compute the gradient of the cost_function w.r.t. the parameters.
+    '''
+    if objective == 'CI':
+        q = u0.copy()
+    if objective == 'MODEL':
+        q = [c_0,nu]
+    if objective == 'CI and MODEL' :
+        q = np.r_[u0.copy(),np.array([c_0,nu])]
     #
-    # mu    
+    if U is None :
+        U,_ = physics(c_0,nu,lambdas)
+
+    if lambdas is None :
+        lambdas = adjoint(c_0,nu,u0,U_data,U)
+    # mu
     #relationship between lambda and mu:
     #$( \mu^t \partial_u g - lambda^T\partial_{\dot{u}}F)\\big|0 = 0 $
     #
     mu = lambdas[0].copy() 
     #
     # final integration to compute the gradient
-    ############# TODO :: PUT EVERYTHING HERE IN operators_matrix_tools !! ####################
     # a few definitions:
     # dqj:
     null_dqj = lambda u,d,x,t,q: 0.
@@ -375,6 +377,65 @@ for i_adjoint in range(n_adj_max):
     #
     DJ = st.gradient_q(u0,U,lambdas,U_data,x,time,q,operator_dqj,operator_dqf,operator_dqg,mu)
     #
+    return DJ
+
+U_data,_ = physics(c_data,nu_data,u_data)
+
+
+for i_adjoint in range(n_adj_max):
+    if i_adjoint >0 :
+        learning_factor_ci = 1./(1.+(1.*i_adjoint)**.1)
+        learning_factor_model = 50./(1.+(1.*i_adjoint)**.1)
+    else :
+        learning_factor_ci = .5
+        learning_factor_model = 1.
+    #
+    if i_adjoint>1:
+        if np.linalg.norm(DJ)<eps_DJ:
+            print('gradient is small: break')
+            break
+    if i_adjoint>2:
+        if np.linalg.norm(gradients[-1] - gradients[-2]) < eps_delta_DJ:
+            print('gradient update is small: break')
+            break
+    ## update model:
+    # update all parameters with the gradient
+    if objective == 'MODEL' :
+        q = q + 1.*DJ*learning_factor_model
+    if objective == 'CI' :
+        q = q + 1.*DJ*learning_factor_ci
+    if objective == 'CI and MODEL' :
+        q[0:n_x] = q[0:n_x] + 1.*DJ[0:n_x]*learning_factor_ci
+        q[-2:] = q[-2:] + 1.*DJ[-2:]*learning_factor_model
+    #
+    # update model parameters
+    if objective == 'CI':
+        c_0,nu = q_physics[0],q_physics[1]
+    else:
+        limiters(q,-2,10.)
+        limiters(q,-1,1.,.1)
+        c_0,nu = q[-2],q[-1]
+    #
+    # update initial conditions:
+    if objective == 'CI' or objective == 'CI and MODEL':
+        for i_x in range(n_x): limiters(q,i_x,10.)
+        u0 = q[:n_x]
+    else:
+        u0 = u0_init
+    #
+    ##################################################
+    # Run the model
+    ##################################################
+    U,_ = physics(c_0,nu,u0)
+    if i_adjoint == 0 :
+        U_init = [u.copy() for u in U]
+    ##################################################
+    # Compute the gradient
+    ##################################################
+    # adjoint states
+    lambdas = adjoint(c_0,nu,u0,U_data,U)
+    # gradient
+    DJ = gradient(c_0,nu,u0,U_data,U,lambdas)
     ########################################################
     ################### PRINTS #############################
     if verbose_minimization is True:
@@ -402,7 +463,7 @@ for i_adjoint in range(n_adj_max):
             print(s)
         if  (objective=='MODEL') is False:
             s  = 'ecart CI: '
-            s += '%.4f' % (np.linalg.norm(u0 + DJ[:n_x] - u_data))
+            s += '%.4f' % (np.linalg.norm(u0 + DJ[:n_x] - u_data)/np.linalg.norm(u_data))
             print(s)
     #############################################################
     ############################################################
@@ -514,7 +575,7 @@ if 1:
         mmax,mmin = np.max([U[num],lambdas[num]]),np.min([U[num],lambdas[num]])
         ax3.set_ylim(mmin,mmax)
         return line1,line2,line3,line4,title,
-    line_ani = animation.FuncAnimation(fig3, update_line, xrange(ind_plot_start,ind_plot_end,n_plot_skip), fargs=(lambdas,U,U_data_init,U_data,x,line21,line22,line23,line24,title_time),
+    line_ani = animation.FuncAnimation(fig3, update_line, xrange(ind_plot_start,ind_plot_end,n_plot_skip), fargs=(lambdas,U,U_init,U_data,x,line21,line22,line23,line24,title_time),
                                        interval=100, blit=False)
     #
     #
