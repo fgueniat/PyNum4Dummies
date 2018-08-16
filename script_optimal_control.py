@@ -378,6 +378,7 @@ for i_adjoint in range(n_adj_max):
     new_cost = cost_function(new_q,U_precomputed)
     ################################
     # Adjusting the step size:
+    # spirit of BFGS with a 1 step line search
     if islearning is True :
         step_has_decreased = False
         if verbose_minimization is True : print('adjusting the step length in progress')

@@ -105,7 +105,10 @@ ind_plot_start,ind_plot_end,n_plot_skip = 0,n_it,int(n_it/100)
 verbose_data = False
 verbose_minimization = True
 
-def flux_limiters(u,i,m,treshold = None):
+def limiters(u,i,m,treshold = None):
+    '''
+    force the solution to remain in a feasible domain
+    '''
     if u[i] > m:
         u[i] = m
     if treshold is None:
@@ -193,10 +196,12 @@ for i_t in xrange(n_it):
 
 for i_adjoint in range(n_adj_max):
     if i_adjoint >0 :
-        learning_factor = 2./(1.+(1.*i_adjoint)**.1)
+        learning_factor_ci = 2./(1.+(1.*i_adjoint)**.1)
+        learning_factor_model = 50./(1.+(1.*i_adjoint)**.1)
     else :
-        learning_factor = 1.
-    print learning_factor
+        learning_factor_ci = 1.
+        learning_factor_model = 1.
+    #
     if i_adjoint>1:
         if np.linalg.norm(DJ)<eps_DJ:
             print('gradient is small: break')
@@ -207,20 +212,25 @@ for i_adjoint in range(n_adj_max):
             break
     ## update model:
     # update all parameters with the gradient
-    flux_gradient_limiter = 1./tmax
-    q= q + 1.*DJ*learning_factor * flux_gradient_limiter
+    if objective == 'MODEL' :
+        q = q + 1.*DJ*learning_factor_model
+    if objective == 'CI' :
+        q = q + 1.*DJ*learning_factor_ci
+    if objective == 'CI and MODEL' :
+        q[0:n_x] = q[0:n_x] + 1.*DJ[0:n_x]*learning_factor_ci
+        q[-2:] = q[-2:] + 1.*DJ[-2:]*learning_factor_model
     #
     # update model parameters
     if objective == 'CI':
         c_0,nu = q_physics[0],q_physics[1]
     else:
-        flux_limiters(q,-2,10.)
-        flux_limiters(q,-1,1.,.1)
+        limiters(q,-2,10.)
+        limiters(q,-1,1.,.1)
         c_0,nu = q[-2],q[-1]
     #
     # update initial conditions:
     if objective == 'CI' or objective == 'CI and MODEL':
-        for i_x in range(n_x): flux_limiters(q,i_x,10.)
+        for i_x in range(n_x): limiters(q,i_x,10.)
         u0 = q[:n_x]
     else:
         u0 = u0_init
