@@ -2,6 +2,7 @@ import solver_matrix_tools as st
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+from perlin_noise import perlin
 
 '''
 
@@ -22,69 +23,6 @@ This data is used either for:
     v/ goes to i/
 
 '''
-###############################3
-#### Generating smooth noise
-
-def perlin(x,y=None,seed=0):
-    '''
-    Perlin noise is a smooth noise.
-    '''
-    #
-    if y is not None :
-        if x.ndim ==1 & y.ndim ==1 :
-            xx,yy = np.meshgrid(x,y)
-        else :
-            if x.ndim == y.ndim:
-                xx = x.copy()
-                yy = y.copy()
-            else : #graceful exit
-                print('x and y do not have the same dimensions')
-                return -1
-    else:
-        y_ = np.array([0,1])
-        xx,yy = np.meshgrid(x,y_)
-    # permutation table
-    np.random.seed(seed)
-    p = np.arange(256,dtype=int)
-    np.random.shuffle(p)
-    p = np.stack([p,p]).flatten()
-    # coordinates of the top-left
-    xi = xx.astype(int)
-    yi = yy.astype(int)
-    # internal coordinates
-    xf = xx - xi
-    yf = yy - yi
-    # fade factors
-    u = fade_perlin(xf)
-    v = fade_perlin(yf)
-    # noise components
-    n00 = gradient_perlin(p[p[xi]+yi],xf,yf)
-    n01 = gradient_perlin(p[p[xi]+yi+1],xf,yf-1)
-    n11 = gradient_perlin(p[p[xi+1]+yi+1],xf-1,yf-1)
-    n10 = gradient_perlin(p[p[xi+1]+yi],xf-1,yf)
-    # combine noises
-    x1 = lerp_perlin(n00,n10,u)
-    x2 = lerp_perlin(n01,n11,u) # FIX1: I was using n10 instead of n01
-    if y is None : # 1d
-        return lerp_perlin(x1,x2,v)[0] # FIX2: I also had to reverse x1 and x2 here
-    else :
-        return lerp_perlin(x1,x2,v)
-
-def lerp_perlin(a,b,x):
-    "linear interpolation"
-    return a + x * (b-a)
-
-def fade_perlin(t):
-    "6t^5 - 15t^4 + 10t^3"
-    return 6 * t**5 - 15 * t**4 + 10 * t**3
-
-def gradient_perlin(h,x,y):
-    "grad converts h to the right gradient vector and return the dot product with (x,y)"
-    vectors = np.array([[0,1],[0,-1],[1,0],[-1,0]])
-    g = vectors[h%4]
-    return g[:,:,0] * x + g[:,:,1] * y
-
-
 
 
 ##################################################
@@ -95,11 +33,11 @@ def gradient_perlin(h,x,y):
 
 # Data Assimilation objective:
 objectives = ['CI and MODEL','MODEL','CI']
-objective = objectives[2]
-is_adv,is_nl_adv,is_diff,is_dxxx = True,True,False,False
-if is_diff is True : print('INFOS: backward integration is unstable')
+objective = objectives[0]
+is_adv,is_nl_adv,is_diff,is_dxxx = True,False,True,False
+if is_diff is True : print('INFOS: backward integration is unstable with viscosity')
 # parameters for the minimization
-n_adj_max = 15
+n_adj_max = 120
 eps_DJ = 1.e-7
 eps_delta_DJ = 1.e-6
 
@@ -123,8 +61,8 @@ xmin,xmax = -5.,5.
 x = np.linspace(xmin,xmax,n_x)
 
 # time
-t0,dt = 0., 0.005
-tmax = 10.1
+t0,dt = 0., 0.0005
+tmax = .25
 n_it = int(tmax/dt)
 time = t0 + dt*np.arange(n_it)
 
@@ -254,7 +192,10 @@ for i_t in xrange(n_it):
 
 
 for i_adjoint in range(n_adj_max):
-    learning_factor = 1./(1.+(1.*i_adjoint)**.3)
+    if i_adjoint >0 :
+        learning_factor = 2./(1.+(1.*i_adjoint)**.1)
+    else :
+        learning_factor = 1.
     print learning_factor
     if i_adjoint>1:
         if np.linalg.norm(DJ)<eps_DJ:

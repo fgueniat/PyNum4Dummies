@@ -3,7 +3,7 @@ import weave
 from operators_matrix_tools import *
 
 '''
-library for solving burgers and easy 1d pde.
+library for solving burgers and 1d pde.
 contains 
 an integrator (integration)
 discretization of:
