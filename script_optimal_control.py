@@ -24,15 +24,15 @@ It means that the user has an objective.
 ##################################################
 
 # parameters for the minimization
-n_adj_max = 10 # number of max iteration
-eps_cost = 1.e-3 # stopping criterion when the cost does not decrease
+n_adj_max = 5 # number of max iteration
+eps_cost = 2.e-4 # stopping criterion when the cost does not decrease
 update_,old_update_,eps_dq = 1.,1.,1.e-5 # stopping criterion when the the parameters do not change much
-eps_delta_dq = 1.e-4  # stopping criterion when the the parameters do not change much
+eps_delta_dq = 5.e-5  # stopping criterion when the the parameters do not change much
 step_has_decreased = False # stoping criterion
 islearning = True # learning a stepsize
 gamma = 0.9 # decrease of the step at each iteration
-gamma_step = 20. # increase of the step if the direction is good
-stepsize_minimization = gamma_step / gamma 
+gamma_step = 10. # increase of the step if the direction is good
+stepsize_minimization = 1./gamma
 
 # optimization
 desample = 50
@@ -44,20 +44,21 @@ integration_method = 'RK4'
 c_0 = 7.5 # advection speed
 nu = 0.65 # dissipation
 rho = .0 
-is_adv,is_NL_adv,is_diff,is_dxxx = True, True, False,False
+is_adv,is_NL_adv,is_diff,is_dxxx = True, True, True ,False
+smooth_step = 50
 if is_diff is True : print('INFOS: backward integration is unstable')
 
 # objectives
 type_of_cost = ['T','t'] #T for final time, t for continuous time
 objective_type = 't'
 #space
-n_x = 250 # number of space points
+n_x = 200 # number of space points
 xmin,xmax = -12.,35. # boundaries of the space domain
 x = np.linspace(xmin,xmax,n_x) # space domain
 dx = x[2]-x[1] # space increment
 
 # time
-t0, tmax = 0.,30., # boundaries of the time domain
+t0, tmax = 0.,10., # boundaries of the time domain
 dt = 0.001 # time increment
 n_it = int(tmax/dt) # number of time points
 time = t0 + dt*np.arange(n_it) # time domain
@@ -95,9 +96,9 @@ bcs = [u_background,u_background]
 u_obj_ghost,_ = st.ghost(u_obj,x,bc_type = bc_type,bcs = bcs)
 u_obj_final_ghost,_ = st.ghost(u_obj_final,x,bc_type = bc_type,bcs = bcs)
 
-bc_noise = u_background + 1.*perlin(2.*time,seed=1) #upflow variation of traffic
+bc_noise = u_background + 1.5*perlin(2.*time,seed=1) #upflow variation of traffic
 
-inflow_noise =  4.*perlin(3.*time,seed=10) # mimic traffic comming from an intersection
+inflow_noise =  4.5*perlin(3.*time,seed=10) # mimic traffic comming from an intersection
 
 # prints
 verbose_computations = True
@@ -213,6 +214,42 @@ if is_diff is True :
 # Functions for BFGS:
 ##################################################
 ##################################################
+def line_search(q,dq, Uq=None,Uq_p1 = None, step=1.):
+    '''
+    Udpate of the paramters is driven by the gradient dq:
+    q = q + step * dq
+    In the spirit of BFGS:
+    Identifying a better step than the current one improve the convergence rate.
+    '''
+    n_ls = 3 # number of iteration.
+    if Uq is None : Uq = physics(q) # compute U
+    U_ref = [u.copy() for u in Uq] # solution reference
+    cost_ref = cost_function(q,Uq) # cost reference
+    step_ref = step # stepsize reference
+    q_p1 = q + dq * step # new variables
+    if Uq_p1 is None : Uq_p1 = physics(q_p1) # new solution
+    cost_p1 = cost_function(q_p1,Uq_p1) # new cost
+    cost_has_decreased = False # control
+    for i_ls in range(n_ls):
+        if cost_p1 < cost_ref : # new cost is better: let's try to have a larger step
+            cost_has_decreased = True
+            cost_ref = cost_p1 # update cost ref
+            step_ref = step # update step ref
+            U_ref = [u.copy for u in Uq_p1] # update ref solution
+            step = step * gamma_step # update stepsize for next iteration
+        else : # new cost is less good: reduce the step
+            step = step/2.
+        if i_ls < n_ls-1: # computations for next iteration
+            q_p1 = q + dq * step # new q
+            Uq_p1 = physics(q_p1) # new solution
+            cost_p1 = cost_function(q_p1,Uq_p1) # associated cost
+    if cost_has_decreased is True :
+        return step_ref, q+step_ref*dq, U_ref, cost_ref
+    else : -1 
+    
+
+    
+
 def physics(q,verbose = False):
     '''
     # Compute the solution of the model.
@@ -238,6 +275,16 @@ def physics(q,verbose = False):
         U.append(u.copy())
     return U
 
+def cost_function(q,U=None):
+    '''
+    Objective function to minimize
+    '''
+    if U is None : U=physics(q)
+    if objective_type == 'T':
+        return np.linalg.norm(U[-1] - u_obj)
+    if objective_type == 't':
+        return np.mean([np.linalg.norm(u - u_obj) for u in U])
+
 def adjoint(q,U=None,verbose = False):
     '''
     # Compute the adjoint states
@@ -251,7 +298,11 @@ def adjoint(q,U=None,verbose = False):
     lambda_ = lambda0.copy()
     # Loop
     for i_t in xrange(n_it-1,-1,-1):
-        lambda_ = st.integration_backward_mat(lambda_,U[i_t],x,time[i_t],-dt,p_forcing = None, operators=operators_adjoint,rhs_forcing = rhs_adjoint,method=integration_method,bc_type = bc_type, bcs = [0.,0.],return_rhs = False)
+        if is_diff is True :
+            if i_t % smooth_step == 0 : is_smooth = True
+            else : is_smooth = False
+        else : is_smooth = False
+        lambda_ = st.integration_backward_mat(lambda_,U[i_t],x,time[i_t],-dt,p_forcing = None, operators=operators_adjoint,rhs_forcing = rhs_adjoint,method=integration_method,bc_type = bc_type, bcs = [0.,0.],return_rhs = False, is_smooth = is_smooth)
         ###############
         ###############
         if verbose is True:
@@ -267,15 +318,6 @@ def adjoint(q,U=None,verbose = False):
     lambdas = lambdas[::-1]
     return lambdas
 
-def cost_function(q,U=None):
-    '''
-    Objective function to minimize
-    '''
-    if U is None : U=physics(q)
-    if objective_type == 'T':
-        return np.linalg.norm(U[-1] - u_obj)
-    if objective_type == 't':
-        return np.mean([np.linalg.norm(u - u_obj) for u in U])
 
 def gradient(q,U=None,lambdas=None,desample=desample):
     '''
@@ -380,26 +422,37 @@ for i_adjoint in range(n_adj_max):
     # Adjusting the step size:
     # spirit of BFGS with a 1 step line search
     if islearning is True :
-        step_has_decreased = False
-        if verbose_minimization is True : print('adjusting the step length in progress')
-        if new_cost > cost : # stepsize is too large, reset or the stepsize
-            if stepsize_minimization>1.:
+        if 0 :
+            step_has_decreased = False
+            if verbose_minimization is True : print('adjusting the step length in progress')
+            if new_cost > cost : # stepsize is too large, reset or the stepsize
+                if stepsize_minimization>1.:
+                    stepsize_minimization = 1.
+                else :
+                    stepsize_minimization = stepsize_minimization / gamma_step
+                new_q = q # no update of q
+                U_precomputed = U # no update of U
+                new_cost = cost # no update the cost
+                step_has_decreased = True
+            else : # stepsize can *possibly* be increased
+                test_q = q + gamma_step * stepsize_minimization * dq
+                U_test = physics(test_q)
+                test_cost = cost_function(test_q,U_test)
+                if test_cost < new_cost : # if it is better, stepsize can be increased
+                    stepsize_minimization = gamma_step * stepsize_minimization #update of the stepsize
+                    U_precomputed = [u.copy() for u in U_test] # update U
+                    new_q = q + stepsize_minimization * dq # update q
+                    new_cost = test_cost # update the cost
+        if 1 :
+            res_linesearch =  line_search(q,dq,Uq=U,Uq_p1 = U_precomputed, step = stepsize_minimization)
+            if res_linesearch == -1:
                 stepsize_minimization = 1.
+                new_q = q # no update of q
+                U_precomputed = U # no update of U
+                new_cost = cost # no update the cost
+                step_has_decreased = True
             else :
-                stepsize_minimization = stepsize_minimization / gamma_step
-            new_q = q # no update of q
-            U_precomputed = U # no update of U
-            new_cost = cost # no update the cost
-            step_has_decreased = True
-        else : # stepsize can *possibly* be increased
-            test_q = q + gamma_step * stepsize_minimization * dq
-            U_test = physics(test_q)
-            test_cost = cost_function(test_q,U_test)
-            if test_cost < new_cost : # if it is better, stepsize can be increased
-                stepsize_minimization = gamma_step * stepsize_minimization #update of the stepsize
-                U_precomputed = [u.copy() for u in U_test] # update U
-                new_q = q + stepsize_minimization * dq # update q
-                new_cost = test_cost # update the cost
+                stepsize_minimization,new_q,U_precomputed,new_cost = res_linesearch
             #
         #
     #################################

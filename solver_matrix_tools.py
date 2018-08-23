@@ -285,7 +285,7 @@ def dxxx_mat(u,x):
     #ui+2
     A += np.diag(v[1:-1], 2)
 
-    return A
+    return -A
 
 
 
@@ -340,7 +340,7 @@ def RHS_mat_adjoint(lambda_,u,x,t,dt,operators = None ):
 
 
 
-def integration_backward_mat(lambda_,u, x, t, dt, p_forcing=None, operators = None, rhs_forcing = None, method = 'RK4', bc_type = 'periodic', bcs = None, n_g = param_n_ghost, return_rhs = False,full_operator=None, return_operator = False):
+def integration_backward_mat(lambda_,u, x, t, dt, p_forcing=None, operators = None, rhs_forcing = None, method = 'RK4', bc_type = 'periodic', bcs = None, n_g = param_n_ghost, return_rhs = False,full_operator=None, return_operator = False,is_smooth = False):
     '''
     Integrate the adjoint problem.
     lambda_ is the quantity to solve
@@ -382,7 +382,7 @@ def integration_backward_mat(lambda_,u, x, t, dt, p_forcing=None, operators = No
     #
     #
     if method == 'RK4':
-        if full_operator is None:
+        if full_operator is None : # construction of the function
             f = lambda lambda_,t,p: np.dot( RHS_mat_adjoint(lambda_,p[0],p[1],t,p[2],operators = p[3]) ,lambda_) +  rhs_forcing(lambda_,p[0],p[1],t,p[2],p[4])
             rhs = RK4(f, lambda_, t, dt,p=[u,x,dt,operators,p_forcing])# - rhs_forcing(lambda_,u,x,t,dt,p_forcing)/4.
 
@@ -390,8 +390,8 @@ def integration_backward_mat(lambda_,u, x, t, dt, p_forcing=None, operators = No
             f = lambda lambda_,t,p: np.dot(full_operator,lambda_) +  rhs_forcing(lambda_,p[0],p[1],t,p[2],p[3])
             rhs = RK4(f, lambda_, t, dt,p=[u,x,dt,p_forcing]) #- rhs_forcing(lambda_,u,x,t,dt,p_forcing)/4.
         #
-        #if is_diffusion is True : rhs = limit_fluct(rhs) # TO BE IMPLEMENTED WHEN DIFFUSION IS PRESENT. SEE WITH AVEUH
         lambda_ = lambda_ + rhs
+    if is_smooth is True : lambda_ = smooth(lambda_) # backward instabilities
     lambda_,_ = deghost(lambda_,x,n_g = n_g)
     if p_forcing is not None: p,_ = deghost(p_forcing,x,n_g = n_g)
     u,x = deghost(u,x,n_g=n_g)
@@ -493,8 +493,14 @@ def gradient_q(u0,U,lambdas,data,x,time,q,dqj,dqf,dqg,mu,desample=1) :
 ##############################################################################################
 ##############################################################################################
 
-
-
+def smooth(x,n_s = 1):
+    '''
+    backward diffusion is unstable:
+    smoothing helps by removing the unstabilities
+    '''
+    x_s = x.copy()
+    x_s [n_s:-n_s] = (x[:-2*n_s] + x[n_s:-n_s] + x[2*n_s:])/3.
+    return x_s
 
 def cfl(u,x,dt):
     '''

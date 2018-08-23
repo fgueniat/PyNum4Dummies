@@ -34,41 +34,42 @@ This data is used either for:
 # Data Assimilation objective:
 objectives = ['CI and MODEL','MODEL','CI']
 objective = objectives[0]
-is_adv,is_nl_adv,is_diff,is_dxxx = True,False,True,False
+is_adv,is_nl_adv,is_diff,is_dxxx = True,True,True,False
+smooth_step = 2
 use_noise = True
 if is_diff is True : print('INFOS: backward integration is unstable with viscosity')
 # parameters for the minimization
-n_adj_max = 55
-eps_DJ = 1.e-7
-eps_delta_DJ = 1.e-6
+n_adj_max = 40 # number of updates
+eps_DJ, eps_delta_DJ = 1.e-7,1.e-6 #when to stop
+gamma,gamma_step = .9,5. #lowering or increasing the steps
+max_c, max_u = 10.,10., # control for stability of the model
+min_nu,max_nu = .1, 1. # idem
+stepsize_minimization = 1. # q = q + step * dq
+
 
 # type of integration
 integration_method = 'RK4'
 
 # physics
-q_physics= [7.2 , 0.35]
+q_physics= [7.2 , 0.65] # this is the initial parameters for c and nu
 
 #
-if objective == 'CI':
-    q_data = q_physics
+if objective == 'CI': 
+    q_data = q_physics # parameters of data are the parametres of the model
 else :
-    q_data = [6.5,0.45]
+    q_data = [6.5,0.45] # we have a different set of initial parameters for the model and for the data
+
 c_0,nu = q_physics[0],q_physics[1]
 c_data,nu_data = q_data[0],q_data[1]
 
 #space
-n_x = 100
+n_x = 200
 xmin,xmax = -5.,5.
 x = np.linspace(xmin,xmax,n_x)
 
 # time
-t0 = 0.
-if is_diff is True : 
-    dt = 0.0005
-    tmax = .25 
-else :
-    dt = 0.001
-    tmax = 1.
+t0,tmax = 0.,1.5
+dt = 0.001
 n_it = int(tmax/dt)
 time = t0 + dt*np.arange(n_it)
 
@@ -79,7 +80,7 @@ u0_init  = np.exp(- (x-mu_offset)**2 / (2. * s_dev2) ) / np.sqrt(2. * np.pi * s_
 u0_init += u_background
 
 # Data
-if objective == 'CI' or objective == 'CI and MODEL':
+if objective == 'CI' or objective == 'CI and MODEL': #the IC are different for the model and the data
     u_background_data = 0.
     s_dev2_data, mu_offset_data = 3., 1.
     if use_noise is True :
@@ -111,19 +112,19 @@ ind_plot_start,ind_plot_end,n_plot_skip = 0,n_it,int(n_it/100)
 verbose_data = False
 verbose_minimization = True
 
-def limiters(u,i,m,treshold = None):
+def limiters(u,max_,min_ = None):
     '''
-    force the solution to remain in a feasible domain
+        force the solution to remain in a feasible domain
     '''
-    if u[i] > m:
-        u[i] = m
-    if treshold is None:
-        if u[i] < -m:
-            u[i] = -m
-    else:
-        if u[i]<treshold:
-            u[i] = treshold
-
+    if u > max_:
+        u = max_
+    if min_ is None:
+        if u < -max_:
+            u = -max_
+    else :
+        if u<min_:
+            u = min_
+    return u
 
 ##################################################
 ##################################################
@@ -144,27 +145,52 @@ def rhs_adjoint(lambda_,u,x,t,dt,p):
     #return np.zeros(lambda_.size)
     return 2. * (u-p) # j = ||u-y|| ^2
 
-### Adjoint
-#  Construction of individual operators:
 
-operator_advection_data         = lambda u,x,t,dt: st.operator_advection(u,x,t,dt,p=c_data)
-operator_NL_advection_data      = lambda u,x,t,dt: st.operator_NL_advection(u,x,t,dt,p=1.)
-operator_diffusion_data         = lambda u,x,t,dt: st.operator_diffusion(u,x,t,dt,p=nu_data)        # 
-operator_dxxx_data              = lambda u,x,t,dt: st.operator_dxxx(u,x,t,dt,p=nu_data)        # 
-#
-    #  Construction of the operators:
-operators_data = []
-if is_adv is True :
-    operators_data += [operator_advection_data]
-if is_nl_adv is True :
-    operators_data += [operator_NL_advection_data]
-if is_diff is True :
-    operators_data += [operator_diffusion_data]
-if is_dxxx is True:
-    operators_data += [operator_dxxx_data]
+#  Construction of the operators:
+
+def construct_operator(c,nu,p=1,is_adv = is_adv, is_nl_adv = is_nl_adv, is_diff = is_diff, is_dxxx = is_dxxx):
+    '''
+    This function assembles the operators needed for the physics
+    '''
+    #  Construction of individual operators:
+    operator_advection         = lambda u,x,t,dt: st.operator_advection(u,x,t,dt,p=c)
+    operator_NL_advection      = lambda u,x,t,dt: st.operator_NL_advection(u,x,t,dt,p=1.)
+    operator_diffusion         = lambda u,x,t,dt: st.operator_diffusion(u,x,t,dt,p=nu)        # 
+    operator_dxxx              = lambda u,x,t,dt: st.operator_dxxx(u,x,t,dt,p=nu)  
+    #  Assemble the individual operators:
+    operators = []
+    if is_adv is True :
+        operators += [operator_advection]
+    if is_nl_adv is True :
+        operators += [operator_NL_advection]  
+    if is_diff is True :
+        operators += [operator_diffusion]
+    if is_dxxx is True:
+        operators += [operator_dxxx]
+    return operators
 
 
-
+def construct_operator_adjoint(c,nu,p=1,is_adv = is_adv, is_nl_adv = is_nl_adv, is_diff = is_diff, is_dxxx = is_dxxx):
+    '''
+    This function assembles the operators needed for computing the adjoint state
+    '''
+    #  Construction of the individual operators:
+    operator_advection_adjoint      = lambda lambda_,u,x,t,dt: st.operator_advection_adjoint(lambda_,u,x,t,dt,p=c)
+    operator_NL_advection_adjoint   = lambda lambda_,u,x,t,dt: st.operator_NL_advection_adjoint(lambda_,u,x,t,dt,p=1.)
+    operator_diffusion_adjoint      = lambda lambda_,u,x,t,dt: st.operator_diffusion_adjoint(lambda_,u,x,t,dt,p=nu)  
+    operator_dxxx_adjoint           = lambda lambda_,u,x,t,dt: st.operator_dxxx_adjoint(lambda_,u,x,t,dt,p=1.)
+    #
+    #  Assemble the individual operators:
+    operators_adjoint = []
+    if is_adv is True :
+        operators_adjoint += [operator_advection_adjoint]
+    if is_nl_adv is True :
+        operators_adjoint += [operator_NL_advection_adjoint]
+    if is_diff is True :
+        operators_adjoint += [operator_diffusion_adjoint]
+    if is_dxxx is True :
+        operators_adjoint += [operator_dxxx_adjoint]
+    return operators_adjoint
 
 # storages
 DJ = np.zeros(n_q)
@@ -179,27 +205,6 @@ lambdas_s = []
 ##################################################
 
 
-
-######################## DATA
-U_data,t_sampled_data = [],[]
-n_save = 1
-u = u_data.copy()
-# Loop
-for i_t in xrange(n_it):
-    u = st.integration(u,x,time[i_t],dt,operators_data,method=integration_method,bc_type = bc_type, bcs = bcs,return_rhs = False)
-    #
-    if verbose_data is True:
-        if i_t%int(n_it/10.) == 0:
-            s = 'computations data: ' + '%.0f' % (10.*i_t/int(n_it/10)) + '%'
-            print(s)
-        #
-    #
-    if i_t%n_save == 0:#save only one solution every n_save 
-        U_data.append(u.copy())
-        t_sampled_data.append(time[i_t])
-
-
-
 def physics(c_0,nu,u0):
     '''
     # Compute the solution of the model.
@@ -207,23 +212,7 @@ def physics(c_0,nu,u0):
     ##################################################
     # define the equation for the model:
     ##################################################
-    #  Construction and update of individual operators:
-    operator_advection              = lambda u,x,t,dt: st.operator_advection(u,x,t,dt,p=c_0)
-    operator_NL_advection           = lambda u,x,t,dt: st.operator_NL_advection(u,x,t,dt,p=1.)
-    operator_diffusion              = lambda u,x,t,dt: st.operator_diffusion(u,x,t,dt,p=nu)
-    operator_dxxx                   = lambda u,x,t,dt: st.operator_dxxx(u,x,t,dt,p=1.)
-    #
-    ########
-    #  Construction of the operators:
-    operators = []
-    if is_adv is True :
-        operators += [operator_advection]
-    if is_nl_adv is True :
-        operators += [operator_NL_advection]
-    if is_diff is True :
-        operators += [operator_diffusion]
-    if is_dxxx is True :
-        operators += [operator_dxxx]
+    operators = construct_operator(c_0,nu)
     #
     #
     ##################################################
@@ -262,27 +251,10 @@ def adjoint(c_0,nu,u0,U_data,U=None):
         q = np.r_[u0.copy(),np.array([c_0,nu])]
     if U is None:
         U,_ = physics(c_0,nu,u0)
-    ##################################################
-    # define the equation for the model:
-    ##################################################
-    #  Construction and update of individual operators:
-    operator_advection_adjoint      = lambda lambda_,u,x,t,dt: st.operator_advection_adjoint(lambda_,u,x,t,dt,p=c_0)
-    operator_NL_advection_adjoint   = lambda lambda_,u,x,t,dt: st.operator_NL_advection_adjoint(lambda_,u,x,t,dt,p=1.)
-    operator_diffusion_adjoint      = lambda lambda_,u,x,t,dt: st.operator_diffusion_adjoint(lambda_,u,x,t,dt,p=nu)  
-    operator_dxxx_adjoint           = lambda lambda_,u,x,t,dt: st.operator_dxxx_adjoint(lambda_,u,x,t,dt,p=1.)
-    #
     ########
     #  Construction of the operators:
-    operators_adjoint = []
-    if is_adv is True :
-        operators_adjoint += [operator_advection_adjoint]
-    if is_nl_adv is True :
-        operators_adjoint += [operator_NL_advection_adjoint]
-    if is_diff is True :
-        operators_adjoint += [operator_diffusion_adjoint]
-    if is_dxxx is True :
-        operators_adjoint += [operator_dxxx_adjoint]
-    #
+    operators_adjoint = construct_operator_adjoint(c_0,nu)
+     #
     lambda0 = np.zeros(n_x)
     # lambda
     if 1:
@@ -291,7 +263,11 @@ def adjoint(c_0,nu,u0,U_data,U=None):
         lambda_ = lambda0.copy()
         # Loop
         for i_t in xrange(n_it-1,-1,-1):
-            lambda_ = st.integration_backward_mat(lambda_,U[i_t],x,time[i_t],-dt,U_data[i_t],operators=operators_adjoint,rhs_forcing = rhs_adjoint,method=integration_method,bc_type = bc_type, bcs = bcs,return_rhs = False)
+            if is_diff is True : # smoothing for backward integration when viscosity
+                if i_t % smooth_step == 0 : is_smooth = True
+                else : is_smooth = False
+            else : is_smooth = False
+            lambda_ = st.integration_backward_mat(lambda_,U[i_t],x,time[i_t],-dt,U_data[i_t],operators=operators_adjoint,rhs_forcing = rhs_adjoint,method=integration_method,bc_type = bc_type, bcs = bcs,return_rhs = False,is_smooth = is_smooth )
             if verbose_data is True:
                 if i_t%int(n_it/4.) == 0:
                     s = 'computations adjoint:' + '%.0f' % (4.*i_t/int(n_it/25)) + '%'
@@ -319,7 +295,7 @@ def gradient(c_0,nu,u0,U_data,U = None, lambdas = None):
         q = np.r_[u0.copy(),np.array([c_0,nu])]
     #
     if U is None :
-        U,_ = physics(c_0,nu,lambdas)
+        U,_ = physics(c_0,nu,u0)
 
     if lambdas is None :
         lambdas = adjoint(c_0,nu,u0,U_data,U)
@@ -379,46 +355,104 @@ def gradient(c_0,nu,u0,U_data,U = None, lambdas = None):
     #
     return DJ
 
+
+def update_q(q,dq,step):
+    if objective == 'MODEL':
+        return q + dq * step
+    #
+    if objective == 'CI':
+        return q + dq * step
+    #
+    if objective == 'CI and MODEL':
+        q_p1 = q.copy()
+        q_p1[:-2] = q_p1[:-2] + step[0] * dq[:-2] 
+        q_p1[-2:] = q[-2:] + step[1] * dq[-2:]
+        return q_p1
+
+def cost_function(U,U_data):
+    if U is None: return 1.e20
+    return dt * np.sum([np.linalg.norm(U[i] - U_data[i]) for i in xrange(n_it)]) 
+
+
+
+def line_search(q,dq,step,U_data,U=None):
+    step_base = gamma * step
+    if objective == 'CI':
+        c_0,nu = q_physics[0], q_physics[1]
+        u0 = q.copy()
+        du = dq.copy()
+        dc,dnu =0.,0.
+    if objective == 'MODEL':
+        u0 = u0_init
+        c_0,nu = q[0],q[1]
+        dc,dnu = dq[0],dq[1]
+        du = 0.
+    if objective == 'CI and MODEL' :
+        u0 = q[:-2]
+        du = dq[:-2]
+        c_0,nu = q[-2],q[-1]
+        dc,dnu = dq[-2],dq[-1]
+    if U is None : U,_ = physics(c_0,nu,u0)
+    cost_0 = cost_function(U,U_data)
+    cost_base = cost_0
+    #
+    n_ls = 3  
+    next_step = step_base
+    is_better = False
+    for i_ls in range(n_ls):
+        next_U,_ = physics(c_0 + next_step *dc, nu + next_step * dnu, u0 + next_step * du)
+        next_cost = cost_function(next_U,U_data)
+        if next_cost < cost_base:
+            is_better = True
+            U_base = [u.copy() for u in next_U]
+            cost_base = next_cost
+            step_base = next_step
+            next_step = next_step * gamma_step
+        else :
+            next_step = next_step/3.
+    # what happens if no points are better ?
+    if is_better is False :
+        print 'no better minimum than current point. Will diminish the step'
+        return U, next_step
+    else :        
+        return U_base, step_base
+
+
+######################## DATA
 U_data,_ = physics(c_data,nu_data,u_data)
 
-
+######################## MINIMIZATION
 for i_adjoint in range(n_adj_max):
-    if i_adjoint >0 :
-        learning_factor_ci = 1./(1.+(1.*i_adjoint)**.1)
-        learning_factor_model = 50./(1.+(1.*i_adjoint)**.1)
-    else :
-        learning_factor_ci = .5
-        learning_factor_model = 1.
     #
+    if i_adjoint > 1:
+        if np.isnan(cost_function(U,U_data)):
+            print ('something went wrong')
+            break
     if i_adjoint>1:
         if np.linalg.norm(DJ)<eps_DJ:
             print('gradient is small: break')
             break
     if i_adjoint>2:
         if np.linalg.norm(gradients[-1] - gradients[-2]) < eps_delta_DJ:
-            print('gradient update is small: break')
-            break
+            if do_computations is True :
+                print('gradient update is small: break')
+                break
     ## update model:
     # update all parameters with the gradient
-    if objective == 'MODEL' :
-        q = q + 1.*DJ*learning_factor_model
-    if objective == 'CI' :
-        q = q + 1.*DJ*learning_factor_ci
-    if objective == 'CI and MODEL' :
-        q[0:n_x] = q[0:n_x] + 1.*DJ[0:n_x]*learning_factor_ci
-        q[-2:] = q[-2:] + 1.*DJ[-2:]*learning_factor_model
+    q = q + DJ * stepsize_minimization
     #
     # update model parameters
     if objective == 'CI':
         c_0,nu = q_physics[0],q_physics[1]
     else:
-        limiters(q,-2,10.)
-        limiters(q,-1,1.,.1)
+        q[-2] = limiters(q[-2],max_c)
+        q[-1] = limiters(q[-1],max_nu,min_nu)
         c_0,nu = q[-2],q[-1]
     #
     # update initial conditions:
     if objective == 'CI' or objective == 'CI and MODEL':
-        for i_x in range(n_x): limiters(q,i_x,10.)
+        for i_x in range(n_x): 
+            q[i_x] = limiters(q[i_x],max_u)
         u0 = q[:n_x]
     else:
         u0 = u0_init
@@ -426,7 +460,8 @@ for i_adjoint in range(n_adj_max):
     ##################################################
     # Run the model
     ##################################################
-    U,_ = physics(c_0,nu,u0)
+    if i_adjoint == 0: 
+        U,_ = physics(c_0,nu,u0) # otherwise send back from line search
     if i_adjoint == 0 :
         U_init = [u.copy() for u in U]
     ##################################################
@@ -436,6 +471,8 @@ for i_adjoint in range(n_adj_max):
     lambdas = adjoint(c_0,nu,u0,U_data,U)
     # gradient
     DJ = gradient(c_0,nu,u0,U_data,U,lambdas)
+    U,stepsize_minimization = line_search(q,DJ,stepsize_minimization,U_data,U)
+    print stepsize_minimization
     ########################################################
     ################### PRINTS #############################
     if verbose_minimization is True:
@@ -444,6 +481,9 @@ for i_adjoint in range(n_adj_max):
         s  = 'iteration : ' + str(i_adjoint)
         print(s)
         #
+        s  = 'Cost : '
+        s += '%.4f' %(cost_function(U,U_data))
+        print(s)
         if (objective=='CI') is False:
             s  = 'targets are:        '
             s += ' c: '
@@ -460,6 +500,10 @@ for i_adjoint in range(n_adj_max):
             s  = 'Gradient DJ (model) is:'
             s += '( %.4f ,' % DJ[-2]
             s += ' %.4f )' % DJ[-1]
+            #print(s)
+            s  = 'Used Gradient DJ (model) is:'
+            s += '( %.4f ,' % (stepsize_minimization * DJ[-2])
+            s += ' %.4f )' % (stepsize_minimization * DJ[-1])
             print(s)
         if  (objective=='MODEL') is False:
             s  = 'ecart CI: '
