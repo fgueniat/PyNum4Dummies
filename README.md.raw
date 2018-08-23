@@ -45,6 +45,16 @@ The various scripts illustrate the use of the library:
 * `script_viscous_burgers.py` - viscous burger equation
 * `script_operators.py` - general equation
 
+# Things it can solve
+- [x] pdes 1D
+- [ ] pdes 2D/3D
+- [x] optimal control
+- [x] assimilation of parameters
+- [x] assimilation of initial conditions
+- [x] both
+- [x] dirichlet conditions (even time dependant)
+- [x] periodic bdc
+- [ ] neumann (implemented but not tested)
 
 # Todo:
 - [x] add adjoint
