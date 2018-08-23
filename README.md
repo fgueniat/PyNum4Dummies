@@ -51,10 +51,11 @@ The various scripts illustrate the use of the library:
 - [x] add assimilation
 - [x] add optimal control
 - [x] Bug in OC: <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/1e8d876be2cd1ebb3f040126884ada03.svg?invert_in_darkmode" align=middle width=60.131775pt height=22.74591pt/> are unstable on BC with dirichlet 
-- [ ] stencils for the pre-written adjoint adjoint ? 
+- [ ] stencils for the pre-written adjoint adjoint ? That would accelerate a lot the code
+- [ ] use of solver_tools instead of solver_matrix_tools when needed ?
 - [x] advection: instabilities in LUD when too stiff ? Flux limiter ?
 - [x] add <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/9a71e411a99b8df0c66c265d4cdf85da.svg?invert_in_darkmode" align=middle width=30.97413pt height=22.74591pt/>/ <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/23ae0d83f5393e9d38dc1ab12c4973d9.svg?invert_in_darkmode" align=middle width=38.40078pt height=22.74591pt/> for KdW or Kuramoto–Sivashinsky equations ?
-- [] but instable like diffusivity ?
+- [ ] but instable like diffusivity
 
 # Explanations
 ## Provided discretization schemes
