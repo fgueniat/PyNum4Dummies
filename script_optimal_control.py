@@ -44,7 +44,7 @@ integration_method = 'RK4'
 c_0 = 7.5 # advection speed
 nu = 0.65 # dissipation
 rho = .0 
-is_adv,is_NL_adv,is_diff,is_dxxx = True, True, True ,False
+is_adv,is_nl_adv,is_diff,is_dxxx = True, True, True ,False
 smooth_step = 50
 if is_diff is True : print('INFOS: backward integration is unstable')
 
@@ -181,26 +181,60 @@ def dqf(u,x,t,q,i):
         #return np.zeros(x.shape)
 
 
-operator_advection              = lambda u,x,t,dt: st.operator_advection(u,x,t,dt,p=c_0)
-operator_NL_advection           = lambda u,x,t,dt: st.operator_NL_advection(u,x,t,dt,p=1.)
-operator_diffusion              = lambda u,x,t,dt: st.operator_diffusion(u,x,t,dt,p=nu)    
 
-operator_advection_adjoint      = lambda lambda_,u,x,t,dt: st.operator_advection_adjoint(lambda_,u,x,t,dt,p=c_0)
-operator_NL_advection_adjoint   = lambda lambda_,u,x,t,dt: st.operator_NL_advection_adjoint(lambda_,u,x,t,dt,p=1.)
-operator_diffusion_adjoint      = lambda lambda_,u,x,t,dt: st.operator_diffusion_adjoint(lambda_,u,x,t,dt,p=nu)  
+
+#  Construction of the operators:
+
+def construct_operator(c,nu,p=1,is_adv = is_adv, is_nl_adv = is_nl_adv, is_diff = is_diff, is_dxxx = is_dxxx):
+    '''
+    This function assembles the operators needed for the physics
+    '''
+    #  Construction of individual operators:
+    operator_advection         = lambda u,x,t,dt: st.operator_advection(u,x,t,dt,p=c)
+    operator_NL_advection      = lambda u,x,t,dt: st.operator_NL_advection(u,x,t,dt,p=1.)
+    operator_diffusion         = lambda u,x,t,dt: st.operator_diffusion(u,x,t,dt,p=nu)        # 
+    operator_dxxx              = lambda u,x,t,dt: st.operator_dxxx(u,x,t,dt,p=nu)  
+    #  Assemble the individual operators:
+    operators = []
+    if is_adv is True :
+        operators += [operator_advection]
+    if is_nl_adv is True :
+        operators += [operator_NL_advection]  
+    if is_diff is True :
+        operators += [operator_diffusion]
+    if is_dxxx is True:
+        operators += [operator_dxxx]
+    return operators
+
+
+def construct_operator_adjoint(c,nu,p=1,is_adv = is_adv, is_nl_adv = is_nl_adv, is_diff = is_diff, is_dxxx = is_dxxx):
+    '''
+    This function assembles the operators needed for computing the adjoint state
+    '''
+    #  Construction of the individual operators:
+    operator_advection_adjoint      = lambda lambda_,u,x,t,dt: st.operator_advection_adjoint(lambda_,u,x,t,dt,p=c)
+    operator_NL_advection_adjoint   = lambda lambda_,u,x,t,dt: st.operator_NL_advection_adjoint(lambda_,u,x,t,dt,p=1.)
+    operator_diffusion_adjoint      = lambda lambda_,u,x,t,dt: st.operator_diffusion_adjoint(lambda_,u,x,t,dt,p=nu)  
+    operator_dxxx_adjoint           = lambda lambda_,u,x,t,dt: st.operator_dxxx_adjoint(lambda_,u,x,t,dt,p=1.)
+    #
+    #  Assemble the individual operators:
+    operators_adjoint = []
+    if is_adv is True :
+        operators_adjoint += [operator_advection_adjoint]
+    if is_nl_adv is True :
+        operators_adjoint += [operator_NL_advection_adjoint]
+    if is_diff is True :
+        operators_adjoint += [operator_diffusion_adjoint]
+    if is_dxxx is True :
+        operators_adjoint += [operator_dxxx_adjoint]
+    return operators_adjoint
+
+
+
 
 #    
-operators_without_control = []
-operators_adjoint = []
-if is_adv is True :
-    operators_without_control += [operator_advection]
-    operators_adjoint +=  [operator_advection_adjoint]
-if is_NL_adv is True :
-    operators_without_control += [operator_NL_advection]
-    operators_adjoint +=  [operator_NL_advection_adjoint]
-if is_diff is True :
-    operators_without_control += [operator_diffusion]
-    operators_adjoint +=  [operator_diffusion_adjoint]
+operators_without_control = construct_operator(c_0,nu)
+operators_adjoint= construct_operator_adjoint(c_0,nu)
 
 
 
@@ -422,38 +456,16 @@ for i_adjoint in range(n_adj_max):
     # Adjusting the step size:
     # spirit of BFGS with a 1 step line search
     if islearning is True :
-        if 0 :
-            step_has_decreased = False
-            if verbose_minimization is True : print('adjusting the step length in progress')
-            if new_cost > cost : # stepsize is too large, reset or the stepsize
-                if stepsize_minimization>1.:
-                    stepsize_minimization = 1.
-                else :
-                    stepsize_minimization = stepsize_minimization / gamma_step
-                new_q = q # no update of q
-                U_precomputed = U # no update of U
-                new_cost = cost # no update the cost
-                step_has_decreased = True
-            else : # stepsize can *possibly* be increased
-                test_q = q + gamma_step * stepsize_minimization * dq
-                U_test = physics(test_q)
-                test_cost = cost_function(test_q,U_test)
-                if test_cost < new_cost : # if it is better, stepsize can be increased
-                    stepsize_minimization = gamma_step * stepsize_minimization #update of the stepsize
-                    U_precomputed = [u.copy() for u in U_test] # update U
-                    new_q = q + stepsize_minimization * dq # update q
-                    new_cost = test_cost # update the cost
-        if 1 :
-            res_linesearch =  line_search(q,dq,Uq=U,Uq_p1 = U_precomputed, step = stepsize_minimization)
-            if res_linesearch == -1:
-                stepsize_minimization = 1.
-                new_q = q # no update of q
-                U_precomputed = U # no update of U
-                new_cost = cost # no update the cost
-                step_has_decreased = True
-            else :
-                stepsize_minimization,new_q,U_precomputed,new_cost = res_linesearch
-            #
+        res_linesearch =  line_search(q,dq,Uq=U,Uq_p1 = U_precomputed, step = stepsize_minimization)
+        if res_linesearch == -1:
+            stepsize_minimization = 1.
+            new_q = q # no update of q
+            U_precomputed = U # no update of U
+            new_cost = cost # no update the cost
+            step_has_decreased = True
+        else :
+            stepsize_minimization,new_q,U_precomputed,new_cost = res_linesearch
+        #
         #
     #################################
     # Savings and stopping criteria
