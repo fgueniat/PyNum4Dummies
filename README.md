@@ -3,20 +3,33 @@
 ## Aims
 This project consists in a library `solver_tools` and a bunch of python scripts.
 
-The library aims at solving "easy" 1d partial differential equations (pdes), for education and research.
+The library aims at 
+* solving "easy" 1d partial differential equations (pdes), 
+* controlling the pdes to reach a user-defined objective (e.g. suppression of oscillations)
+* doing data-assimilation (i.e., calibrate model parameters or initial conditions)
+for education and research.
 
 
-### Exemples of pdes:
+### Examples of pdes:
 * The heat equation <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/458569e3907f54a425e4fecadb138e1f.svg?invert_in_darkmode" align=middle width=73.767705pt height=33.42009pt/>
 * Burger equation <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/ec7768a23e0ca2a447be1cc33a099882.svg?invert_in_darkmode" align=middle width=78.92775pt height=28.86675pt/>
 * The advection equation <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/19a5775f98b29fc2720f13ec6f7851aa.svg?invert_in_darkmode" align=middle width=76.63986pt height=28.86675pt/>
-
+### Data assimilation ?
+Forecast models usually contain unknown parameters. 
+It can be 
+* the weather
+* the rate of propagation of a disease
+* some economic activities
+Practically speaking, these parameters may be 
+* the model's initial conditions ("<img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/2f996063a8ab238f2f1705ee4159938f.svg?invert_in_darkmode" align=middle width=74.73378pt height=24.56553pt/>")
+* the model's boundary conditions ("<img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/fe83da44c2fee65b461a7a79acf354e6.svg?invert_in_darkmode" align=middle width=74.73378pt height=24.56553pt/>" and "<img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/2dae7eebba96e1bf14210987c3498007.svg?invert_in_darkmode" align=middle width=77.690745pt height=24.56553pt/>")
+* the model's parameters (<img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/c745b9b57c145ec5577b82542b2df546.svg?invert_in_darkmode" align=middle width=10.537065pt height=14.10255pt/> in the heat equation)
 
 ## Files
 The project consists in a library and a collection of scripts that illustrates it.
 
 
-### The librairie 
+### The libraries 
 `solver_tools.py`
 
 It contains:

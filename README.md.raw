@@ -3,20 +3,33 @@
 ## Aims
 This project consists in a library `solver_tools` and a bunch of python scripts.
 
-The library aims at solving "easy" 1d partial differential equations (pdes), for education and research.
+The library aims at 
+* solving "easy" 1d partial differential equations (pdes), 
+* controlling the pdes to reach a user-defined objective (e.g. suppression of oscillations)
+* doing data-assimilation (i.e., calibrate model parameters or initial conditions)
+for education and research.
 
 
-### Exemples of pdes:
+### Examples of pdes:
 * The heat equation $ \frac{\partial u}{\partial t} = \alpha \frac{\partial^2 u}{\partial x^2} $
 * Burger equation $ \frac{\partial u} {\partial t} = -u \frac{\partial u}{\partial x} $
 * The advection equation $ \frac{\partial u} {\partial t} = -c \frac{\partial u}{\partial x} $
-
+### Data assimilation ?
+Forecast models usually contain unknown parameters. 
+It can be 
+* the weather
+* the rate of propagation of a disease
+* some economic activities
+Practically speaking, these parameters may be 
+* the model's initial conditions ("$u(t=0,x)$")
+* the model's boundary conditions ("$u(t,x=0)$" and "$u(t,x=L)$")
+* the model's parameters ($\alpha$ in the heat equation)
 
 ## Files
 The project consists in a library and a collection of scripts that illustrates it.
 
 
-### The librairie 
+### The libraries 
 `solver_tools.py`
 
 It contains:
