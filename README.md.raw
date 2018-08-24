@@ -80,6 +80,8 @@ The various scripts illustrate the use of the library:
 - [x] advection: instabilities in LUD when too stiff ? Flux limiter ?
 - [x] add $\partial_{xxx}$/ $\partial_{xxxx}$ for KdW or Kuramoto–Sivashinsky equations ?
 - [ ] but instable like diffusivity
+- [ ] better presentation here
+- [ ] Remove useless scripts and improve compatibility between solver_tools and solver_matrix_tools
 
 # Explanations
 ## Provided discretization schemes
