@@ -73,7 +73,8 @@ The various scripts illustrate the use of the library:
 - [x] add adjoint
 - [x] add assimilation
 - [x] add optimal control
-- [x] Bug in OC: <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/1e8d876be2cd1ebb3f040126884ada03.svg?invert_in_darkmode" align=middle width=60.131775pt height=22.74591pt/> are unstable on BC with dirichlet 
+- [x] Bug in OC: <img src="https://rawgit.com/fgueniat/PyNum4Dummies/master/svgs/1e8d876be2cd1ebb3f040126884ada03.svg?invert_in_darkmode" align=middle width=60.131775pt height=22.74591pt/> are unstable on BC with dirichlet
+- [x] Unstable diffusivity in adjoint (solved by smoothering...)
 - [ ] stencils for the pre-written adjoint adjoint ? That would accelerate a lot the code
 - [ ] use of solver_tools instead of solver_matrix_tools when needed ?
 - [x] advection: instabilities in LUD when too stiff ? Flux limiter ?
